@@ -19,10 +19,43 @@ import { StockLocationModule } from './stock-location/stock-location.module';
 import { StoreModule } from './store/store.module';
 import { TaxModule } from './tax/tax.module';
 import { UserModule } from './user/user.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-  imports: [ApiKeyModule, AuthModule, CartModule, CurrencyModule, CustomerModule, FulfillmentModule, InventoryModule, OrderModule, PaymentModule, PricingModule, ProductModule, PromotionModule, RegionModule, SalesChannelModule, StockLocationModule, StoreModule, TaxModule, UserModule],
+  imports: [
+    ApiKeyModule,
+    AuthModule, 
+    CartModule, 
+    CurrencyModule, 
+    CustomerModule, 
+    FulfillmentModule, 
+    InventoryModule, 
+    OrderModule, 
+    PaymentModule, 
+    PricingModule, 
+    ProductModule, 
+    PromotionModule, 
+    RegionModule, 
+    SalesChannelModule, 
+    StockLocationModule, 
+    StoreModule, 
+    TaxModule, 
+    UserModule,
+    ConfigModule.forRoot(
+      {
+   isGlobal: true,
+    }
+    ),
+    MongooseModule.forRootAsync({
+    useFactory: (configService: ConfigService) => ({
+      uri: configService.get<string>('DB_URI'),
+    }),
+    inject: [ConfigService],
+  }),
+  ],
   controllers: [AppController],
   providers: [AppService],
+  
 })
 export class AppModule {}
