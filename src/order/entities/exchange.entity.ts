@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Order } from './order.entity';
 import { OrderExchangeItem } from './exchange-item.entity';
-import { OrderShipping } from './order-shipping-method.entity';
+import { OrderShipping } from './order-shipping.entity';
 import { Return } from './return.entity';
 import { OrderTransaction } from './transaction.entity';
 

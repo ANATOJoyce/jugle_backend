@@ -1,68 +1,83 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { ShippingMethod } from './shipping-method.entity';
+import { v4 as uuidv4 } from 'uuid';
 
+// Utilisez une interface pour éviter les imports circulaires
 export type ShippingMethodAdjustmentDocument = ShippingMethodAdjustment & Document;
 
 @Schema({
   timestamps: true,
-  collection: 'cart_shipping_method_adjustment' // Correspond au tableName original
+  collection: 'cart_shipping_method_adjustments', // Nom plus standard
+  autoIndex: true // Pour les environnements de développement
 })
 export class ShippingMethodAdjustment {
-  @Prop({ required: true, unique: true })
-  id: string; // Préfixe "casmadj" sera généré automatiquement
+  @Prop({
+    type: String,
+    required: true,
+    unique: true,
+    default: () => `casmadj_${uuidv4()}`
+  })
+  id: string;
 
-  @Prop()
-  description: string;
+  @Prop({ type: String })
+  description?: string;
 
-  @Prop()
-  code: string;
+  @Prop({ type: String })
+  code?: string;
 
-  @Prop({ type: Number, required: true })
-  amount: number; // bigNumber() devient Number
+  @Prop({ 
+    type: Number,
+    required: true,
+    min: 0 // Validation supplémentaire
+  })
+  amount: number;
 
-  @Prop()
-  provider_id: string;
+  @Prop({ type: String })
+  provider_id?: string;
 
   @Prop({ type: Object })
-  metadata: Record<string, any>;
+  metadata?: Record<string, any>;
 
-  @Prop()
-  promotion_id: string;
+  @Prop({ type: String })
+  promotion_id?: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'ShippingMethod', required: true })
-  shipping_method: ShippingMethod;
+  @Prop({ 
+    type: Types.ObjectId, 
+    ref: 'ShippingMethod', 
+    required: true,
+    index: true 
+  })
+  shipping_method: Types.ObjectId; // Utilisez ObjectId au lieu de l'entité
 
-  @Prop()
-  deleted_at: Date;
+  @Prop({ type: Date, default: null })
+  deleted_at?: Date | null;
 }
 
 export const ShippingMethodAdjustmentSchema = SchemaFactory.createForClass(ShippingMethodAdjustment);
 
-// Indexes
+// Index composé pour les requêtes fréquentes
 ShippingMethodAdjustmentSchema.index(
-  { promotion_id: 1 },
+  { 
+    shipping_method: 1,
+    deleted_at: 1 
+  },
+  { 
+    name: 'IDX_shipping_method_active_adjustments',
+    partialFilterExpression: { deleted_at: null } 
+  }
+);
+
+// Index pour les promotions
+ShippingMethodAdjustmentSchema.index(
+  { 
+    promotion_id: 1,
+    deleted_at: 1 
+  },
   {
-    name: 'IDX_shipping_method_adjustment_promotion_id',
-    partialFilterExpression: {
-      deleted_at: { $exists: false },
-      promotion_id: { $exists: true }
+    name: 'IDX_promotion_active_adjustments',
+    partialFilterExpression: { 
+      deleted_at: null,
+      promotion_id: { $exists: true } 
     }
   }
 );
-
-ShippingMethodAdjustmentSchema.index(
-  { shipping_method: 1 },
-  {
-    name: 'IDX_adjustment_shipping_method_id',
-    partialFilterExpression: { deleted_at: { $exists: false } }
-  }
-);
-
-// Middleware pour générer l'ID avec préfixe
-ShippingMethodAdjustmentSchema.pre('save', function(next) {
-  if (!this.id) {
-    this.id = `casmadj_${Math.random().toString(36).substring(2, 11)}`;
-  }
-  next();
-});

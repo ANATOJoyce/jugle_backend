@@ -36,17 +36,4 @@ export class Invite extends Document {
 
 export const InviteSchema = SchemaFactory.createForClass(Invite);
 
-InviteSchema.index(
-  { email: 1 },
-  {
-    unique: true,
-    partialFilterExpression: { deleted_at: { $eq: null } },
-  },
-);
 
-InviteSchema.index(
-  { token: 1 },
-  {
-    partialFilterExpression: { deleted_at: { $eq: null } },
-  },
-);

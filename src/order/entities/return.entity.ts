@@ -4,7 +4,7 @@ import { Order } from './order.entity';
 import { OrderExchange } from './exchange.entity';
 import { OrderClaim } from './claim.entity';
 import { ReturnItem } from './return-item.entity';
-import { OrderShipping } from './order-shipping-method.entity';
+import { OrderShipping } from './order-shipping.entity';
 import { OrderTransaction } from './transaction.entity';
 
 export enum ReturnStatus {

@@ -35,6 +35,11 @@ export class LineItemTaxLine {
 
   @Prop()
   deleted_at: Date;
+
+  @Prop()
+  createAt: Date;
+  
+ 
 }
 
 export const LineItemTaxLineSchema = SchemaFactory.createForClass(LineItemTaxLine);

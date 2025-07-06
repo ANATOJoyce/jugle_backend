@@ -1,4 +1,11 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateApiKeyDto } from './create-api-key.dto';
+import { IsOptional, IsString } from 'class-validator';
 
-export class UpdateApiKeyDto extends PartialType(CreateApiKeyDto) {}
+export class UpdateApiKeyDto {
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  revoked_by?: string;
+}

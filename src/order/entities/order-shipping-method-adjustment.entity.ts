@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes, Types } from 'mongoose';
-import { OrderShipping } from './order-shipping-method.entity';
+import { OrderShipping } from './order-shipping.entity';
 
 @Schema({ collection: 'order_shipping_method_adjustments', timestamps: true })
 export class OrderShippingMethodAdjustment extends Document {

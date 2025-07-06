@@ -2,12 +2,14 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Country } from './country.entity';
 
+export type RegionDocument = Region & Document;
+
 @Schema({
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
 })
-export class Region extends Document {
+export class Region {
   @Prop({ required: true, index: true })
   name: string;
 
