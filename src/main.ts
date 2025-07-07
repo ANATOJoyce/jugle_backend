@@ -2,8 +2,16 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { cert, initializeApp, ServiceAccount } from 'firebase-admin/app';
+import * as serviceAccount from './serviceAccountKey.json';
 
 async function bootstrap() {
+ initializeApp({
+    credential: cert(serviceAccount as ServiceAccount),
+    databaseURL: 'https://jungle-8b30e.firebaseio.com',
+  });
+
+  
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
@@ -20,3 +28,4 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
+

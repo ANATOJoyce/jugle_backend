@@ -26,7 +26,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   imports: [
     ApiKeyModule,
     AuthModule, 
-    CartModule, 
+    //CartModule, 
     CurrencyModule, 
     CustomerModule, 
     FulfillmentModule, 

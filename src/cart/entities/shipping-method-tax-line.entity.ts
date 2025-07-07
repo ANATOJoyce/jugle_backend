@@ -1,16 +1,20 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
-import { ShippingMethod } from './shipping-method.entity';
-
-export type ShippingMethodTaxLineDocument = ShippingMethodTaxLine & Document;
+import { Types } from 'mongoose';
+import { BaseShippingMethodTaxLine } from '../types';
 
 @Schema({
   timestamps: true,
-  collection: 'cart_shipping_method_tax_line' // Conservation du nom de table original
+  collection: 'cart_shipping_method_tax_line',
+  toObject: { virtuals: true },
+  toJSON: { virtuals: true }
 })
-export class ShippingMethodTaxLine {
-  @Prop({ required: true, unique: true })
-  id: string; // Préfixe "casmtxl" généré automatiquement
+export class ShippingMethodTaxLine implements BaseShippingMethodTaxLine {
+  @Prop({
+    required: true,
+    unique: true,
+    default: () => `casmtxl_${new Types.ObjectId().toHexString()}`
+  })
+  id: string;
 
   @Prop()
   description: string;
@@ -19,7 +23,7 @@ export class ShippingMethodTaxLine {
   code: string;
 
   @Prop({ type: Number, required: true })
-  rate: number; // float() devient Number
+  rate: number;
 
   @Prop()
   provider_id: string;
@@ -31,7 +35,7 @@ export class ShippingMethodTaxLine {
   metadata: Record<string, any>;
 
   @Prop({ type: Types.ObjectId, ref: 'ShippingMethod', required: true })
-  shipping_method: ShippingMethod;
+  shipping_method: Types.ObjectId;
 
   @Prop()
   deleted_at: Date;
@@ -42,27 +46,5 @@ export const ShippingMethodTaxLineSchema = SchemaFactory.createForClass(Shipping
 // Indexes
 ShippingMethodTaxLineSchema.index(
   { shipping_method: 1 },
-  {
-    name: 'IDX_tax_line_shipping_method_id',
-    partialFilterExpression: { deleted_at: { $exists: false } }
-  }
+  { name: 'shipping_method_index' }
 );
-
-ShippingMethodTaxLineSchema.index(
-  { tax_rate_id: 1 },
-  {
-    name: 'IDX_shipping_method_tax_line_tax_rate_id',
-    partialFilterExpression: {
-      deleted_at: { $exists: false },
-      tax_rate_id: { $exists: true }
-    }
-  }
-);
-
-// Middleware pour générer l'ID avec préfixe
-ShippingMethodTaxLineSchema.pre('save', function(next) {
-  if (!this.id) {
-    this.id = `casmtxl_${Math.random().toString(36).substring(2, 11)}`;
-  }
-  next();
-});

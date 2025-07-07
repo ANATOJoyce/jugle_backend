@@ -1,4 +1,3 @@
-// dtos/variant/update-product-variant.dto.ts
 import { IsOptional, IsString, IsNumber } from 'class-validator';
 
 export class UpdateProductVariantDto {

@@ -55,7 +55,7 @@ export class OrderTransaction extends Document {
   deleted_at: Date | null;
 
 
- // ✅ Factory pour normaliser DTO ➜ Document
+ //  Factory pour normaliser DTO ➜ Document
   static createFromDto(dto: Partial<OrderTransaction>): Partial<OrderTransaction> {
     const toNull = <T>(val: T | undefined): T | null => val === undefined ? null : val;
 

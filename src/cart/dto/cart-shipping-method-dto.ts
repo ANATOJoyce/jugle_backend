@@ -1,6 +1,9 @@
 import { Expose, Type } from 'class-transformer';
 
 export class CartShippingMethodDTO {
+  static toObject(): any {
+    throw new Error('Method not implemented.');
+  }
   @Expose()
   id: string; // ID du ShippingMethod
 

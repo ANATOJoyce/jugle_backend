@@ -1,26 +1,38 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCurrencyDto } from './dto/create-currency.dto';
-import { UpdateCurrencyDto } from './dto/update-currency.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Currency, CurrencyDocument } from './entities/currency.entity';
 
 @Injectable()
 export class CurrencyService {
-  create(createCurrencyDto: CreateCurrencyDto) {
-    return 'This action adds a new currency';
+  constructor(
+    @InjectModel(Currency.name) private currencyModel: Model<CurrencyDocument>,
+  ) {}
+
+  /**
+   * Liste toutes les devises et retourne un count total + array
+   */
+  async listAndCountCurrencies(): Promise<{ count: number; currencies: Currency[] }> {
+    const currencies = await this.currencyModel.find().exec();
+    const count = await this.currencyModel.countDocuments().exec();
+    return { count, currencies };
   }
 
-  findAll() {
-    return `This action returns all currency`;
+  /**
+   * Liste simple des devises
+   */
+  async listCurrencies(): Promise<Currency[]> {
+    return this.currencyModel.find().exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} currency`;
-  }
-
-  update(id: number, updateCurrencyDto: UpdateCurrencyDto) {
-    return `This action updates a #${id} currency`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} currency`;
+  /**
+   * Récupérer une devise spécifique par code
+   */
+  async retrieveCurrency(code: string): Promise<Currency> {
+    const currency = await this.currencyModel.findOne({ code }).exec();
+    if (!currency) {
+      throw new NotFoundException(`Currency with code ${code} not found`);
+    }
+    return currency;
   }
 }

@@ -5,60 +5,56 @@ import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Invite } from './entities/invite.entity';
-import { UpdateAuthDto } from 'src/auth/dto/update-auth.dto';
+import { Role } from '../auth/role.enum';
 
 type UserDocument = HydratedDocument<User>;
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
-    @InjectModel(Invite.name) private inviteModel: Model<Invite>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(Invite.name) private readonly inviteModel: Model<Invite>,
   ) {}
 
- /* async create(createUserDto: CreateUserDto): Promise<UserDocument> {
-    const createdUser = new this.userModel(createUserDto);
-    return createdUser.save();
-  }*/
-
-  createUser(createUserDto: CreateUserDto){
-    const newUser = new this.userModel(createUserDto);
-    return newUser.save();  
+  /** Créer un nouvel utilisateur */
+   async createUser(dto: CreateUserDto): Promise<User> {
+    const roleToUse = dto.role ?? Role.CUSTOMER;
+    const u = new this.userModel({ ...dto, role: roleToUse });
+    return u.save();
   }
 
-  getsUser(){
-    return this.userModel.find();
-  }
-
+  /** Récupérer tous les utilisateurs */
   async findAll(): Promise<UserDocument[]> {
     return this.userModel.find().exec();
   }
 
+  /** Récupérer un utilisateur par ID */
   async findOneById(id: string): Promise<UserDocument | null> {
     return this.userModel.findById(id).exec();
   }
 
+  /** Récupérer un utilisateur par nom d’utilisateur */
   async findByUsername(username: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ username }).exec();
   }
 
+  /** Récupérer un utilisateur par numéro de téléphone */
   async findByPhone(phone: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ phone }).exec();
   }
 
+  /** Mettre à jour un utilisateur */
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserDocument | null> {
     return this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true }).exec();
   }
 
-  updateUser(id: string, updateAuthDto: UpdateAuthDto){
-    return this.userModel.findByIdAndUpdate(id, updateAuthDto, {new: true});
-  }
-
+  /** Supprimer un utilisateur */
   async remove(id: string): Promise<UserDocument | null> {
     return this.userModel.findByIdAndDelete(id).exec();
   }
-
-  deleteUser(id: string){
-    return this.userModel.findByIdAndDelete(id);
+  
+  /** recuper tout le role de tout les utilisateur */
+   async findAllByRole(role: Role): Promise<User[]> {
+    return this.userModel.find({ role }).exec();
   }
 }

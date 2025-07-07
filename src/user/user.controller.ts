@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, UsePipes, ValidationPipe, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import mongoose from 'mongoose';
+import { Role } from '../auth/role.enum';
+
 
 @Controller('user')
 export class UserController {
@@ -10,7 +12,7 @@ export class UserController {
 
 
   @Post()
-  createUser(@Body() createUserDto: CreateUserDto) {
+  createUser(@Body(ValidationPipe) createUserDto: CreateUserDto) {
     return this.userService.createUser(createUserDto);
   }
 
@@ -34,8 +36,8 @@ export class UserController {
   }
 
   @Patch(':id')
-  @UsePipes(new ValidationPipe())
-  async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @UsePipes()
+  async updateUser(@Param('id') id: string, @Body(ValidationPipe) updateUserDto: UpdateUserDto) {
     const isValid = mongoose.Types.ObjectId.isValid(id);
     if (!isValid) throw new HttpException('ID invalide',400);
     const updateUser = await this.userService.update(id, updateUserDto);
@@ -50,6 +52,19 @@ export class UserController {
     if (!isValid) throw new HttpException('Invalid ID',400);
     const deleteUser = await this.userService.remove(id);
     if (!deleteUser) throw new HttpException('User Not Found', 404);
-    return;
+    return this.userService.remove(id);
   }
+  
+  @Get() // GET /users ou GET /users?role=VENDOR
+  findAllByRole(@Query('role') role?: Role) {
+    if (role) {
+      return this.userService.findAllByRole(role);
+    }
+    return this.userService.findAll(); // <- récupère tout si aucun rôle fourni
+  }
+
+
+ 
+
+  
 }

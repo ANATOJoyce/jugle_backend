@@ -8,6 +8,8 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
+  Request
 
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -15,10 +17,14 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { PhoneLoginDto } from './dto/phone-login.dto';
 import { RegisterDto } from './dto/Register.dto';
+import { OtpService } from './otp/otp.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService,
+
+  ) {}
 
   /** REGISTER */
   @Post('register')
@@ -62,4 +68,13 @@ export class AuthController {
   remove(@Param('id') id: string) {
     return this.authService.remove(id);
   }
+
+  @UseGuards(AuthGuard)
+  @Get('profile')
+  getProfile(@Request() req) {
+    return req.user;
+  }
+
+
+
 }

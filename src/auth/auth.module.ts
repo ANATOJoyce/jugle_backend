@@ -4,16 +4,16 @@ import { AuthController } from './auth.controller';
 import { UserModule } from 'src/user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { OtpService } from './otp/otp.service';
 import { OtpModule } from './otp/otp.module';
-import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthIdentity, AuthIdentitySchema } from './entities/auth-identity.entity';
 import { ProviderIdentity, ProviderIdentitySchema } from './entities/provider-identity.entity';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Otp, OtpSchema } from './otp/otp.entity';
+import { PassportModule } from '@nestjs/passport';
+import { FirebaseAuthStrategy } from './firebase-auth.strategy';
 
 @Module({
   imports: [
+    PassportModule.register({ defaultStrategy: 'firebase-jwt' }),
     UserModule,
     ConfigModule, // pour être sûr que ConfigService est dispo
     JwtModule.registerAsync({
@@ -32,6 +32,8 @@ import { Otp, OtpSchema } from './otp/otp.entity';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService,JwtStrategy],
+  providers: [AuthService,FirebaseAuthStrategy],
+  exports: [PassportModule]
+
 })
 export class AuthModule {}

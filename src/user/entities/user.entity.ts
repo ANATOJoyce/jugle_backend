@@ -31,15 +31,13 @@ export class User extends Document {
 
   @Prop({ required: true })
   password: string;  // <-- ajout obligatoire !
-
-  @Prop({ required: false })
-  avatar_url?: string;
-
-  @Prop({ type: Object, default: null })
-  metadata?: Record<string, unknown>;
   
   @Prop({ required: false, index: true })
   phone?: string;
+
+  @Prop({ required: false, index: true })
+  role?: string;
+
 
   @Prop({ type: Date, default: null })
   deleted_at?: Date;

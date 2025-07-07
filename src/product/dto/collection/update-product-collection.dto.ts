@@ -1,4 +1,3 @@
-// dtos/collection/update-product-collection.dto.ts
 import { IsString, IsOptional } from 'class-validator';
 
 export class UpdateProductCollectionDto {

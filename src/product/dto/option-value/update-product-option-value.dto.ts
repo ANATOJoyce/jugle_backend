@@ -1,4 +1,3 @@
-// dtos/option-value/update-product-option-value.dto.ts
 import { IsOptional, IsString } from 'class-validator';
 
 export class UpdateProductOptionValueDto {

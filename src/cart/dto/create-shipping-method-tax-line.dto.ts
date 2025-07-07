@@ -1,6 +1,6 @@
 import { IsOptional, IsString, IsNumber, IsObject } from 'class-validator';
 
-export class CreateShippingMethodTaxLineDTO {
+export class CreateShippingMethodTaxLineDTO  {
   @IsOptional()
   @IsString()
   id?: string; // facultatif pour updates

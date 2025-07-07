@@ -43,6 +43,8 @@ export class ShippingMethod {
 
   @Prop()
   deleted_at: Date;
+
+  
 }
 
 export type ShippingMethodDocument = ShippingMethod & Document;

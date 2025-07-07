@@ -3,32 +3,22 @@ import { CurrencyService } from './currency.service';
 import { CreateCurrencyDto } from './dto/create-currency.dto';
 import { UpdateCurrencyDto } from './dto/update-currency.dto';
 
-@Controller('currency')
+@Controller('currencies')
 export class CurrencyController {
   constructor(private readonly currencyService: CurrencyService) {}
 
-  @Post()
-  create(@Body() createCurrencyDto: CreateCurrencyDto) {
-    return this.currencyService.create(createCurrencyDto);
-  }
-
   @Get()
-  findAll() {
-    return this.currencyService.findAll();
+  async listCurrencies() {
+    return this.currencyService.listCurrencies();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.currencyService.findOne(+id);
+  @Get('count')
+  async listAndCountCurrencies() {
+    return this.currencyService.listAndCountCurrencies();
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCurrencyDto: UpdateCurrencyDto) {
-    return this.currencyService.update(+id, updateCurrencyDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.currencyService.remove(+id);
+  @Get(':code')
+  async retrieveCurrency(@Param('code') code: string) {
+    return this.currencyService.retrieveCurrency(code);
   }
 }
