@@ -3,7 +3,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ApiKeyModule } from './api-key/api-key.module';
 import { AuthModule } from './auth/auth.module';
-import { CartModule } from './cart/cart.module';
 import { CurrencyModule } from './currency/currency.module';
 import { CustomerModule } from './customer/customer.module';
 import { FulfillmentModule } from './fulfillment/fulfillment.module';
@@ -21,6 +20,8 @@ import { TaxModule } from './tax/tax.module';
 import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './auth/roles.guards';
 
 @Module({
   imports: [
@@ -55,7 +56,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
   
 })
 export class AppModule {}
