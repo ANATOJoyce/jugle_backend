@@ -33,8 +33,14 @@ import { Order, OrderSchema } from 'src/order/entities/order.entity';
   
 
   
-  controllers: [CartController],
-  providers: [CartService],
-  exports: [CartService]
+  controllers: [
+    CartController
+  ],
+  providers: [
+    CartService
+  ],
+  exports: [
+    CartService
+  ]
 })
 export class CartModule {}
