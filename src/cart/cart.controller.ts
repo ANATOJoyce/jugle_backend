@@ -345,12 +345,12 @@ export class CartController {
   }
 
   @Post('restore-line-item-adjustments')
-  @UseGuards(AuthGuard) // Sécurise la route, à personnaliser
+  @UseGuards(AuthGuard('jwt')) // Sécurise la route, à personnaliserAbout
   async restoreLineItemAdjustments(@Body() dto: RestoreLineItemAdjustmentsDto) {
     return this.cartService.restoreLineItemAdjustments(dto.ids);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Post('restore-line-item-tax-lines')
   async restoreLineItemTaxLines(@Body() dto: RestoreLineItemTaxLinesDto): Promise<LineItemTaxLine[]> {
     return this.cartService.restoreLineItemTaxLines(dto.ids);
@@ -391,7 +391,7 @@ export class CartController {
       return this.cartService.restoreShippingMethods(dto.ids);
   }
 
-  //retrieveCart récupérer un panier 
+  // //retrieveCart récupérer un panier 
   @Get(':id')
   async getCart(
     @Param('id') id: string,
