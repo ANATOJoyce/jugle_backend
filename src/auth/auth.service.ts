@@ -6,7 +6,6 @@ import * as bcrypt from 'bcrypt';
 import { OtpService } from './otp/otp.service';
 import { User } from 'src/user/entities/user.entity';
 import { RegisterDto } from './dto/Register.dto';
-import { CreateAuthIdentityDto } from './dto/create-auth-identity.dto';
 import { AuthIdentity, AuthIdentityDocument } from './entities/auth-identity.entity';
 import { ProviderIdentity, ProviderIdentityDocument } from './entities/provider-identity.entity';
 import { Model } from 'mongoose';
