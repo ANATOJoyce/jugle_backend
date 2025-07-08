@@ -9,7 +9,9 @@ import { AuthIdentity, AuthIdentitySchema } from './entities/auth-identity.entit
 import { ProviderIdentity, ProviderIdentitySchema } from './entities/provider-identity.entity';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
-import { FirebaseAuthStrategy } from './firebase-auth.strategy';
+import { RolesGuard } from './roles.guards';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Module({
   imports: [
@@ -32,8 +34,8 @@ import { FirebaseAuthStrategy } from './firebase-auth.strategy';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService,FirebaseAuthStrategy],
-  exports: [PassportModule]
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
+  exports: [PassportModule,JwtStrategy, JwtAuthGuard, RolesGuard]
 
 })
 export class AuthModule {}

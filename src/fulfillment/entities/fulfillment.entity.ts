@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { FulfillmentAddress } from './address.entity';
+import { FulfillmentAddress } from './fulfillment-address.entity';
 import { FulfillmentItem } from './fulfillment-item.entity';
 import { FulfillmentLabel } from './fulfillment-label.entity';
 import { FulfillmentProvider } from './fulfillment-provider.entity';

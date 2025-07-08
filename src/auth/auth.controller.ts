@@ -17,8 +17,8 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { PhoneLoginDto } from './dto/phone-login.dto';
 import { RegisterDto } from './dto/Register.dto';
-import { OtpService } from './otp/otp.service';
 import { AuthGuard } from '@nestjs/passport';
+
 
 @Controller('auth')
 export class AuthController {
@@ -69,7 +69,8 @@ export class AuthController {
     return this.authService.remove(id);
   }
 
-  @UseGuards(AuthGuard)
+
+  
   @Get('profile')
   getProfile(@Request() req) {
     return req.user;

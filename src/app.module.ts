@@ -22,11 +22,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/roles.guards';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { PoliciesGuard } from './auth/policies.guard';
+import { CaslModule } from './casl/casl.module';
 
 @Module({
   imports: [
     ApiKeyModule,
     AuthModule, 
+    CaslModule,
     //CartModule, 
     CurrencyModule, 
     CustomerModule, 
@@ -60,7 +64,17 @@ import { RolesGuard } from './auth/roles.guards';
 
     {
       provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+
+    {
+      provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+
+      {
+      provide: APP_GUARD,
+      useClass: PoliciesGuard,
     },
   ],
   

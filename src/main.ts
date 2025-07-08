@@ -3,14 +3,8 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { cert, initializeApp, ServiceAccount } from 'firebase-admin/app';
-import * as serviceAccount from './serviceAccountKey.json';
 
 async function bootstrap() {
- initializeApp({
-    credential: cert(serviceAccount as ServiceAccount),
-    databaseURL: 'https://jungle-8b30e.firebaseio.com',
-  });
-
   
   const app = await NestFactory.create(AppModule);
 

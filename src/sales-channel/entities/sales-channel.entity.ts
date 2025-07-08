@@ -23,5 +23,3 @@ export class SalesChannel extends Document {
 
 export const SalesChannelSchema = SchemaFactory.createForClass(SalesChannel);
 
-// Add text indexes for searchable fields
-SalesChannelSchema.index({ name: 'text', description: 'text' });
