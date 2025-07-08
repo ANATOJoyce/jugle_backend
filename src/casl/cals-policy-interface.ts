@@ -8,3 +8,4 @@ interface IPolicyHandler {
 type PolicyHandlerCallback = (ability: AppAbility) => boolean;
 
 export type PolicyHandler = IPolicyHandler | PolicyHandlerCallback;
+

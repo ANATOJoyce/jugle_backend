@@ -1,5 +1,5 @@
 export enum Action {
-  Manage = 'manage', // CASL : tout
+  Manage = 'manage', // CASL : tout les droit
   Create = 'create',
   Read   = 'read',
   Update = 'update',

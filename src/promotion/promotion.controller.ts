@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { PromotionService } from './promotion.service';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
 
-@Controller('promotion')
+@Controller('promotions')
 export class PromotionController {
   constructor(private readonly promotionService: PromotionService) {}
 
@@ -19,16 +19,16 @@ export class PromotionController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.promotionService.findOne(+id);
+    return this.promotionService.findOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updatePromotionDto: UpdatePromotionDto) {
-    return this.promotionService.update(+id, updatePromotionDto);
+    return this.promotionService.update(id, updatePromotionDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.promotionService.remove(+id);
+    return this.promotionService.remove(id);
   }
 }

@@ -12,13 +12,13 @@ import { Tax } from './entities/tax.entity';
 @Injectable()
 export class TaxService {
 
-   constructor(
+  constructor(
       @InjectModel(TaxProvider.name) private readonly taxproviderModel: Model<Document>,
       @InjectModel(TaxRateRule.name) private readonly taxrateruleModel: Model<Document>,
       @InjectModel(TaxRate.name) private readonly taxrateModel: Model<Document>,
       @InjectModel(TaxRegion.name) private readonly taxregionModel: Model<Document>,
       @InjectModel(Tax.name) private readonly taxModel: Model<Document>,
-    ) {}
+  ) {}
 
   create(createTaxDto: CreateTaxDto) {
     return 'This action adds a new tax';
@@ -39,4 +39,5 @@ export class TaxService {
   remove(id: number) {
     return `This action removes a #${id} tax`;
   }
+  
 }

@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { TaxService } from './tax.service';
 import { CreateTaxDto } from './dto/create-tax.dto';
 import { UpdateTaxDto } from './dto/update-tax.dto';
+import { Roles } from 'src/auth/roles.decorator';
 
 @Controller('tax')
 export class TaxController {
@@ -13,6 +14,7 @@ export class TaxController {
   }
 
   @Get()
+  @Roles()
   findAll() {
     return this.taxService.findAll();
   }
