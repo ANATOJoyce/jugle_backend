@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+<<<<<<< HEAD
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -21,3 +22,18 @@
     "noFallthroughCasesInSwitch": false
   }
 }
+=======
+    "target": "esnext",
+    "jsx": "react",
+    "lib": ["dom", "esnext"],
+    "strict": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "noUnusedLocals": false,
+    "allowJs": true,
+    "noImplicitAny": false
+  },
+  "exclude": ["node_modules", "public", ".cache"]
+}
+>>>>>>> 4fae5d4497787c4c65d051ba7b9756fd549fd180
