@@ -19,12 +19,3 @@ export class ProductCollection extends Document {
 
 export const ProductCollectionSchema = SchemaFactory.createForClass(ProductCollection);
 
-// Add partial index for soft delete
-ProductCollectionSchema.index(
-  { handle: 1 },
-  {
-    name: "IDX_collection_handle_unique",
-    unique: true,
-    partialFilterExpression: { deletedAt: { $eq: null } }
-  }
-);

@@ -20,4 +20,4 @@ export interface CreateShippingMethodTaxLineDTO {
   code_taxe: string;
   shipping_method_id: string;
   metadata?: Record<string, any>;
-}
+}  

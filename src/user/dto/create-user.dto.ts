@@ -6,8 +6,7 @@ export class CreateUserDto {
   @IsString() last_name:  string;
   @IsEmail()  email:      string;
   @IsString() password:   string;
-  @IsString() phone:      string;
-
+  @IsString() phone?:      string;
   @IsOptional()
   @IsEnum(Role)
   role?: Role;

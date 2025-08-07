@@ -54,10 +54,3 @@ export class Address {
 
 export const AddressSchema = SchemaFactory.createForClass(Address);
 
-
-AddressSchema.pre('save', function(next) {
-  if (!this.id) {
-    this.id = `caaddr_${Math.random().toString(36).substr(2, 9)}`;
-  }
-  next();
-});

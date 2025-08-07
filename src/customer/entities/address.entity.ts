@@ -64,39 +64,3 @@ export class CustomerAddress {
 
 export const CustomerAddressSchema = SchemaFactory.createForClass(CustomerAddress);
 
-// Middleware pour générer l'ID avec préfixe
-CustomerAddressSchema.pre('save', function(next) {
-  if (!this.id) {
-    this.id = `cuaddr_${Math.random().toString(36).substring(2, 11)}`;
-  }
-  next();
-});
-
-// Index uniques conditionnels
-CustomerAddressSchema.index(
-  { customer: 1 },
-  { 
-    unique: true,
-    partialFilterExpression: { is_default_billing: true },
-    name: 'IDX_customer_address_unique_customer_billing'
-  }
-);
-
-CustomerAddressSchema.index(
-  { customer: 1 },
-  { 
-    unique: true,
-    partialFilterExpression: { is_default_shipping: true },
-    name: 'IDX_customer_address_unique_customer_shipping'
-  }
-);
-
-// Index pour les champs searchable
-CustomerAddressSchema.index({ address_name: 1 });
-CustomerAddressSchema.index({ company: 1 });
-CustomerAddressSchema.index({ first_name: 1 });
-CustomerAddressSchema.index({ last_name: 1 });
-CustomerAddressSchema.index({ address_1: 1 });
-CustomerAddressSchema.index({ city: 1 });
-CustomerAddressSchema.index({ province: 1 });
-CustomerAddressSchema.index({ postal_code: 1 });

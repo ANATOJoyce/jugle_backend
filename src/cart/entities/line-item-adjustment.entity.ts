@@ -39,35 +39,3 @@ export class LineItemAdjustment {
 
 export const LineItemAdjustmentSchema = SchemaFactory.createForClass(LineItemAdjustment);
 
-// Indexes
-LineItemAdjustmentSchema.index(
-  { promotion_id: 1 },
-  {
-    name: 'IDX_line_item_adjustment_promotion_id',
-    partialFilterExpression: {
-      deleted_at: { $exists: false },
-      promotion_id: { $exists: true }
-    }
-  }
-);
-
-LineItemAdjustmentSchema.index(
-  { item: 1 },
-  {
-    name: 'IDX_adjustment_item_id',
-    partialFilterExpression: { deleted_at: { $exists: false } }
-  }
-);
-
-// Middleware for ID generation
-LineItemAdjustmentSchema.pre('save', function(next) {
-  if (!this.id) {
-    this.id = `caliadj_${Math.random().toString(36).substring(2, 11)}`;
-  }
-  next();
-});
-
-// Validation for amount >= 0
-LineItemAdjustmentSchema.path('amount').validate(function(value: number) {
-  return value >= 0;
-}, 'Amount must be greater than or equal to 0');

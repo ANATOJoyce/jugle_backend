@@ -15,8 +15,6 @@ export class Customer {
   @Prop({ required: true, unique: true })
   id: string; // Auto-generated with "cus" prefix
 
-  @Prop({ type: String, index: true })
-  company_name: string;
 
   @Prop({ type: String, index: true })
   first_name: string;
@@ -71,42 +69,3 @@ export class Customer {
 }
 
 export const CustomerSchema = SchemaFactory.createForClass(Customer);
-
-// ID Generation Hook
-CustomerSchema.pre('save', function(next) {
-  if (!this.id) {
-    this.id = `cus_${Math.random().toString(36).substring(2, 11)}`;
-  }
-  next();
-});
-
-// Cascade Operations
-CustomerSchema.pre('deleteOne', { document: true, query: false }, async function(next) {
-  const customer = this as CustomerDocument;
-  
-  // Delete addresses (cascade)
-  await this.model('CustomerAddress').deleteMany({ _id: { $in: customer.addresses } });
-  
-  // Detach groups (through pivot table)
-  await this.model('CustomerGroupCustomer').deleteMany({ customer: customer._id });
-  
-  next();
-});
-
-// Compound Index for Email+Account
-CustomerSchema.index(
-  { email: 1, has_account: 1 }, 
-  { 
-    unique: true,
-    partialFilterExpression: { 
-      deleted_at: { $exists: false },
-      email: { $exists: true }
-    }
-  }
-);
-
-// Additional indexes for searchable fields
-CustomerSchema.index({ company_name: 1 });
-CustomerSchema.index({ first_name: 1 });
-CustomerSchema.index({ last_name: 1 });
-CustomerSchema.index({ phone: 1 });

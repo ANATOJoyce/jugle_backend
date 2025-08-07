@@ -1,5 +1,12 @@
-// register.dto.ts
-import { IsNotEmpty, IsString, IsEmail, IsOptional, IsPhoneNumber, MinLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsEmail,
+  IsPhoneNumber,
+  MinLength,
+  IsEnum,
+} from 'class-validator';
+import { Role } from '../role.enum';
 
 export class RegisterDto {
   @IsNotEmpty()
@@ -10,8 +17,7 @@ export class RegisterDto {
   @IsString()
   last_name: string;
 
-  @IsNotEmpty()
-  @IsPhoneNumber()
+  @IsString()
   phone: string;
 
   @IsNotEmpty()
@@ -21,4 +27,6 @@ export class RegisterDto {
   @IsNotEmpty()
   @MinLength(6)
   password: string;
+
+
 }

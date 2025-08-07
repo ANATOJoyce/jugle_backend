@@ -25,5 +25,3 @@ export class RefundReason {
 
 export const RefundReasonSchema = SchemaFactory.createForClass(RefundReason);
 
-// Add text index for searchable label
-RefundReasonSchema.index({ label: 'text' });

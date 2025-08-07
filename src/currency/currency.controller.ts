@@ -7,6 +7,12 @@ import { UpdateCurrencyDto } from './dto/update-currency.dto';
 export class CurrencyController {
   constructor(private readonly currencyService: CurrencyService) {}
 
+
+  @Get()
+  getCurrencies() {
+    return this.currencyService.findAll();
+  }
+
   @Get()
   async listCurrencies() {
     return this.currencyService.listCurrencies();

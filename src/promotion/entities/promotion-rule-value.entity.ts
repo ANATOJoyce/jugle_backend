@@ -22,5 +22,3 @@ export class PromotionRuleValue extends Document {
 
 export const PromotionRuleValueSchema = SchemaFactory.createForClass(PromotionRuleValue);
 
-// Add any indexes if needed
-PromotionRuleValueSchema.index({ promotion_rule: 1 });

@@ -1,4 +1,4 @@
-export { Price, PriceSchema } from "./pricing.entity";
+export { Price, PriceSchema } from "./price.entity";
 export { PriceList, PriceListSchema } from "./price-list.entity";
 export { PriceListRule, PriceListRuleSchema } from "./price-list-rule.entity";
 export { PriceRule, PriceRuleSchema } from "./price-rule.entity";

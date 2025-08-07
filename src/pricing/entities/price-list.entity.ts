@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Price } from './pricing.entity';
+import { Price } from './price.entity';
 import { PriceListRule } from './price-list-rule.entity';
 
 export enum PriceListStatus {
@@ -53,15 +53,3 @@ export class PriceList extends Document {
 
 export const PriceListSchema = SchemaFactory.createForClass(PriceList);
 
-// Add cascading delete for related entities
-PriceListSchema.pre('deleteOne', { document: true, query: false }, async function (next) {
-  const priceList = this;
-  
-  // Delete all related prices
-  await priceList.model('Price').deleteMany({ price_list: priceList._id });
-  
-  // Delete all related price list rules
-  await priceList.model('PriceListRule').deleteMany({ price_list: priceList._id });
-  
-  next();
-});

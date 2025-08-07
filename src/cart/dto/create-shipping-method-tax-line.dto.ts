@@ -1,35 +1,25 @@
-import { IsOptional, IsString, IsNumber, IsObject } from 'class-validator';
+import { IsString, IsNumber, IsOptional } from 'class-validator';
 
-export class CreateShippingMethodTaxLineDTO  {
-  @IsOptional()
-  @IsString()
-  id?: string; // facultatif pour updates
-
-  @IsOptional()
-  @IsString()
-  description?: string;
-
+export class CreateShippingMethodTaxLineDTO {
   @IsString()
   code: string;
 
   @IsNumber()
   rate: number;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsOptional()
   provider_id?: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   tax_rate_id?: string;
 
-  @IsOptional()
-  @IsObject()
-  metadata?: Record<string, any>;
-
   @IsString()
-  shipping_method_id: string; // correspond à Types.ObjectId en string
-
-  @IsOptional()
-  deleted_at?: Date;
+  shipping_method_id: string;
 }
+

@@ -36,10 +36,3 @@ export class FulfillmentLabel {
 
 export const FulfillmentLabelSchema = SchemaFactory.createForClass(FulfillmentLabel);
 
-// Ajout du virtual pour la population
-FulfillmentLabelSchema.virtual('fulfillment_details', {
-  ref: 'Fulfillment',
-  localField: 'fulfillment',
-  foreignField: '_id',
-  justOne: true,
-});

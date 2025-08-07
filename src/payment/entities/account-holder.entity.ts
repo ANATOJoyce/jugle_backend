@@ -21,8 +21,3 @@ export class AccountHolder extends Document {
 
 export const AccountHolderSchema = SchemaFactory.createForClass(AccountHolder);
 
-// Compound index for provider_id + external_id
-AccountHolderSchema.index(
-  { provider_id: 1, external_id: 1 }, 
-  { unique: true }
-);

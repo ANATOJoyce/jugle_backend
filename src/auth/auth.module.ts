@@ -12,12 +12,18 @@ import { PassportModule } from '@nestjs/passport';
 import { RolesGuard } from './roles.guards';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { VerificationCode, VerificationCodeSchema } from './entities/verification-code.entity';
+import { MailModule } from '../mail/mail.module';
+import { User, UserSchema } from 'src/user/entities/user.entity';
+
 
 @Module({
   imports: [
-    PassportModule.register({ defaultStrategy: 'firebase-jwt' }),
+    ConfigModule, 
+    PassportModule,
     UserModule,
-    ConfigModule, // pour être sûr que ConfigService est dispo
+    MailModule,
+    // pour être sûr que ConfigService est dispo
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -28,14 +34,16 @@ import { JwtAuthGuard } from './jwt-auth.guard';
     }), 
     OtpModule,
     MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
       { name: AuthIdentity.name, schema: AuthIdentitySchema },
       { name: ProviderIdentity.name, schema: ProviderIdentitySchema },
+      { name: VerificationCode.name, schema: VerificationCodeSchema },
       
     ]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
-  exports: [PassportModule,JwtStrategy, JwtAuthGuard, RolesGuard]
+  exports: [AuthService,PassportModule,JwtStrategy, JwtAuthGuard, RolesGuard]
 
 })
 export class AuthModule {}

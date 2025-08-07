@@ -21,19 +21,3 @@ export class ProductOption extends Document {
 
 export const ProductOptionSchema = SchemaFactory.createForClass(ProductOption);
 
-// Compound index for product + title uniqueness (with soft delete support)
-ProductOptionSchema.index(
-  { product: 1, title: 1 },
-  {
-    name: "IDX_option_product_id_title_unique",
-    unique: true,
-    partialFilterExpression: { deletedAt: { $eq: null } },
-  }
-);
-
-// Cascading delete for 'values' (Mongoose middleware)
-ProductOptionSchema.pre('deleteOne', { document: true }, async function (next) {
-  const optionId = this._id;
-  await this.model('ProductOptionValue').deleteMany({ option: optionId });
-  next();
-});

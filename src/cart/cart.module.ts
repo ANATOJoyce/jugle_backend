@@ -12,7 +12,8 @@ import { LineItemAdjustment, LineItemAdjustmentSchema } from './entities/line-it
 import { ShippingMethod, ShippingMethodSchema } from './entities/shipping-method.entity';
 import { ShippingMethodTaxLine, ShippingMethodTaxLineSchema } from './entities/shipping-method-tax-line.entity';
 import { ShippingMethodAdjustment, ShippingMethodAdjustmentSchema } from './entities/shipping-method-adjustment.entity';
-import { Order, OrderSchema } from 'src/order/entities/order.entity';
+import { Order, OrderSchema } from 'src/order/entities/CommandePrincipale/order.entity';
+import { Promotion, PromotionSchema } from 'src/promotion/entities/promotion.entity';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { Order, OrderSchema } from 'src/order/entities/order.entity';
           {name: ShippingMethodTaxLine.name, schema: ShippingMethodTaxLineSchema },
           {name: ShippingMethodAdjustment.name, schema: ShippingMethodAdjustmentSchema },
           { name: Order.name, schema: OrderSchema },
+          { name: Promotion.name, schema: PromotionSchema }
         ]),
       
   ],
@@ -40,7 +42,8 @@ import { Order, OrderSchema } from 'src/order/entities/order.entity';
     CartService
   ],
   exports: [
-    CartService
+    CartService,MongooseModule
+    
   ]
 })
 export class CartModule {}

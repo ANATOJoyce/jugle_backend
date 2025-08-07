@@ -1,6 +1,9 @@
 import { IsString, IsBoolean, IsOptional } from 'class-validator';
 
 export class CreateRegionDto {
+
+   @IsString()
+  countryIds: string;
   @IsString()
   name: string;
 

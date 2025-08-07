@@ -1,12 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, UsePipes, ValidationPipe, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, HttpException, UsePipes, ValidationPipe, Query, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import mongoose from 'mongoose';
 import { Role } from '../auth/role.enum';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { AuthRequest } from 'src/types/auth-request';
+import { Roles } from 'src/auth/roles.decorator';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from 'src/auth/roles.guards';
+import { HasStoreGuard } from 'src/auth/has-store.guard';
+import { CurrentUser } from 'src/cart/current-user.decorator';
+import { CurrentUserId } from 'src/cart/curent-user.decorator';
+import { User } from './entities/user.entity';
 
 
-@Controller('user')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -15,7 +24,13 @@ export class UserController {
   createUser(@Body(ValidationPipe) createUserDto: CreateUserDto) {
     return this.userService.createUser(createUserDto);
   }
-
+  
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Get('/profile')
+  @Roles(Role.ADMIN, Role.VENDOR)
+  async getProfile(@CurrentUser() user: User) {
+    return user; // déjà bien typé grâce au décorateur
+  }
   
  //Afficher tout les utilisateur
   @Get()
@@ -24,16 +39,19 @@ export class UserController {
   }
 
   //user/:id(recherceh d'un utililisateur par son id )
+@UseGuards(AuthGuard('jwt'), RolesGuard)
+@Roles(Role.VENDOR)
+@Get('me')
+async findMe(@CurrentUser() id: string) {
+  const isValid = mongoose.Types.ObjectId.isValid(id);
+  if (!isValid) throw new HttpException('Utilisateur introuvable', 404);
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const isValid = mongoose.Types.ObjectId.isValid(id);
-    if (!isValid) throw new HttpException('Utilisateur introuvable',404);
-    const findOneUser = await this.userService.findOneById(id);
-    if(!findOneUser) throw new HttpException('Utilisateur est absent',404);
-    //return this.userService.findOneById(id);
-    return findOneUser;
-  }
+  const findOneUser = await this.userService.findOneById(id);
+  if (!findOneUser) throw new HttpException('Utilisateur est absent', 404);
+
+  return findOneUser;
+}
+
 
   @Patch(':id')
   @UsePipes()
@@ -63,8 +81,17 @@ export class UserController {
     return this.userService.findAll(); // <- récupère tout si aucun rôle fourni
   }
 
+// user.controller.ts
 
- 
+  @UseGuards(AuthGuard('jwt'), RolesGuard, HasStoreGuard)
+  @Roles(Role.VENDOR)
+  @Get('dashboard')
+  getVendorDashboard(@Req() req: AuthRequest) {
+    return {
+      message: 'Bienvenue sur votre tableau de bord vendeur !',
+    };
+  }
+
 
   
 }

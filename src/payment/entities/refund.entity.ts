@@ -36,5 +36,3 @@ export class Refund {
 
 export const RefundSchema = SchemaFactory.createForClass(Refund);
 
-// Add index for payment
-RefundSchema.index({ payment: 1 }, { name: 'IDX_refund_payment_id' });

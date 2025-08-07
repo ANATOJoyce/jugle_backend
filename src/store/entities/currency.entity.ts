@@ -25,4 +25,5 @@ export class StoreCurrency extends Document {
   store?: MongooseSchema.Types.ObjectId; // Nullable reference
 }
 
+export type StoreCurrencyDocument = StoreCurrency & Document;
 export const StoreCurrencySchema = SchemaFactory.createForClass(StoreCurrency);

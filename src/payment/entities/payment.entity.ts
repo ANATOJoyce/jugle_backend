@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 import { PaymentCollection } from './payment-collection.entity';
 import { PaymentSession } from './payment-session.entity';
 import { Refund } from './refund.entity';
 import { Capture } from './capture.entity';
 
-export type PaymentDocument = Payment & Document;
+export type PaymentDocument = Payment & Document & { _id: Types.ObjectId };
 
 @Schema({ timestamps: true })
 export class Payment {
@@ -51,6 +51,10 @@ export class Payment {
   })
   refunds: Refund[];
 
+  @Prop({ type: String, enum: ['pending', 'captured', 'refunded'], default: 'pending' })
+  status: string;
+
+
   @Prop({ 
     type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Capture' }],
     default: [] 
@@ -60,20 +64,3 @@ export class Payment {
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
 
-// Add indexes
-PaymentSchema.index({ provider_id: 1 }, { name: 'IDX_payment_provider_id' });
-PaymentSchema.index({ payment_collection: 1 }, { name: 'IDX_payment_payment_collection_id' });
-PaymentSchema.index({ payment_session: 1 }, { name: 'IDX_payment_payment_session_id' });
-/*
-// Cascade delete for refunds and captures
-PaymentSchema.pre('deleteOne', async function (next) {
-  const paymentId = this.getQuery()._id;
-  
-  // Delete related refunds
-  await this.model('Refund').deleteMany({ payment: paymentId });
-  
-  // Delete related captures
-  await this.model('Capture').deleteMany({ payment: paymentId });
-  
-  next();
-});*/

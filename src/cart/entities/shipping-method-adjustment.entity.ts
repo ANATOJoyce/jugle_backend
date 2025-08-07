@@ -7,8 +7,8 @@ export type ShippingMethodAdjustmentDocument = ShippingMethodAdjustment & Docume
 
 @Schema({
   timestamps: true,
-  collection: 'cart_shipping_method_adjustments', // Nom plus standard
-  autoIndex: true // Pour les environnements de développement
+  collection: 'cart_shipping_method_adjustments',
+  autoIndex: true
 })
 export class ShippingMethodAdjustment {
   @Prop({
@@ -23,23 +23,29 @@ export class ShippingMethodAdjustment {
   description?: string;
 
   @Prop({ type: String })
-  code?: string;
+  promotion_code?: string;
 
   @Prop({ 
     type: Number,
     required: true,
-    min: 0 // Validation supplémentaire
+    min: 0
   })
   amount: number;
 
   @Prop({ type: String })
   provider_id?: string;
 
-  @Prop({ type: Object })
-  metadata?: Record<string, any>;
-
   @Prop({ type: String })
   promotion_id?: string;
+
+  @Prop({ type: String, enum: ['discount', 'fee', 'other'], default: 'discount' })
+  type?: string;
+
+  @Prop({ type: Boolean, default: false })
+  is_discount?: boolean;
+
+  @Prop({ type: Object })
+  metadata?: Record<string, any>;
 
   @Prop({ 
     type: Types.ObjectId, 
@@ -47,37 +53,10 @@ export class ShippingMethodAdjustment {
     required: true,
     index: true 
   })
-  shipping_method: Types.ObjectId; // Utilisez ObjectId au lieu de l'entité
+  shipping_method: Types.ObjectId;
 
   @Prop({ type: Date, default: null })
   deleted_at?: Date | null;
 }
 
 export const ShippingMethodAdjustmentSchema = SchemaFactory.createForClass(ShippingMethodAdjustment);
-
-// Index composé pour les requêtes fréquentes
-ShippingMethodAdjustmentSchema.index(
-  { 
-    shipping_method: 1,
-    deleted_at: 1 
-  },
-  { 
-    name: 'IDX_shipping_method_active_adjustments',
-    partialFilterExpression: { deleted_at: null } 
-  }
-);
-
-// Index pour les promotions
-ShippingMethodAdjustmentSchema.index(
-  { 
-    promotion_id: 1,
-    deleted_at: 1 
-  },
-  {
-    name: 'IDX_promotion_active_adjustments',
-    partialFilterExpression: { 
-      deleted_at: null,
-      promotion_id: { $exists: true } 
-    }
-  }
-);

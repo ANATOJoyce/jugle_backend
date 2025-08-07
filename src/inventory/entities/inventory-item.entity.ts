@@ -90,31 +90,3 @@ export class InventoryItem {
 
 export const InventoryItemSchema = SchemaFactory.createForClass(InventoryItem);
 
-// Indexes
-InventoryItemSchema.index(
-  { sku: 1 },
-  { 
-    unique: true,
-    name: "IDX_inventory_item_sku",
-    partialFilterExpression: { deleted_at: { $eq: null } }
-  }
-);
-
-// Indexes supplémentaires pour les champs searchable
-InventoryItemSchema.index({ hs_code: 1 });
-InventoryItemSchema.index({ mid_code: 1 });
-InventoryItemSchema.index({ description: 1 });
-InventoryItemSchema.index({ title: 1 });
-
-// Virtuals
-InventoryItemSchema.virtual('location_levels_details', {
-  ref: 'InventoryLevel',
-  localField: 'location_levels',
-  foreignField: '_id'
-});
-
-InventoryItemSchema.virtual('reservation_items_details', {
-  ref: 'ReservationItem',
-  localField: 'reservation_items',
-  foreignField: '_id'
-});

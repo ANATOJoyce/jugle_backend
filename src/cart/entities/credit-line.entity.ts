@@ -32,20 +32,3 @@ export class CreditLine {
 }
 
 export const CreditLineSchema = SchemaFactory.createForClass(CreditLine);
-
-// Indexes
-CreditLineSchema.index(
-  { reference: 1, reference_id: 1 }, 
-  {
-    name: 'IDX_cart_credit_line_reference_reference_id',
-    partialFilterExpression: { deleted_at: { $exists: false } }
-  }
-);
-
-// Middleware pour générer l'ID avec préfixe
-CreditLineSchema.pre('save', function(next) {
-  if (!this.id) {
-    this.id = `cacl_${Math.random().toString(36).substr(2, 9)}`;
-  }
-  next();
-});

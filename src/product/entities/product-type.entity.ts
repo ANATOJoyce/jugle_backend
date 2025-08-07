@@ -20,12 +20,3 @@ export class ProductType extends Document {
 
 export const ProductTypeSchema = SchemaFactory.createForClass(ProductType);
 
-// Create index with partial filter for soft delete
-ProductTypeSchema.index(
-  { value: 1 },
-  {
-    name: "IDX_type_value_unique",
-    unique: true,
-    partialFilterExpression: { deletedAt: { $eq: null } }
-  }
-);

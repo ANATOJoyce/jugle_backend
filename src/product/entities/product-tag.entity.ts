@@ -23,12 +23,3 @@ export class ProductTag extends Document {
 
 export const ProductTagSchema = SchemaFactory.createForClass(ProductTag);
 
-// Add partial index for soft delete compatibility
-ProductTagSchema.index(
-  { value: 1 },
-  {
-    name: "IDX_tag_value_unique",
-    unique: true,
-    partialFilterExpression: { deletedAt: { $eq: null } }
-  }
-);

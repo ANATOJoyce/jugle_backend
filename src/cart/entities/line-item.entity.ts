@@ -3,6 +3,8 @@ import { Document, Types } from 'mongoose';
 import { Cart } from './cart.entity';
 import { LineItemAdjustment } from './line-item-adjustment.entity';
 import { LineItemTaxLine } from './line-item-tax-line.entity';
+import { Product } from 'src/product/entities/product.entity';
+import { ProductVariant } from 'src/product/entities/product-variant.entity';
 
 export type LineItemDocument = LineItem & Document;
 
@@ -43,6 +45,9 @@ export class LineItem {
 
   @Prop()
   product_type: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'ProductVariant', required: true })
+  product_variant: ProductVariant | Types.ObjectId;
 
   @Prop()
   product_type_id: string;
@@ -89,6 +94,10 @@ export class LineItem {
   @Prop({ type: Object })
   metadata: Record<string, any>;
 
+  @Prop({ type: Types.ObjectId, ref: 'Product', required: true })
+  product: Product;
+
+
   @Prop({ type: [{ type: Types.ObjectId, ref: 'LineItemAdjustment' }] })
   adjustments: LineItemAdjustment[];
 
@@ -104,62 +113,3 @@ export class LineItem {
 
 export const LineItemSchema = SchemaFactory.createForClass(LineItem);
 
-// Indexes
-LineItemSchema.index(
-  { cart: 1 },
-  {
-    name: 'IDX_line_item_cart_id',
-    partialFilterExpression: { deleted_at: { $exists: false } }
-  }
-);
-
-LineItemSchema.index(
-  { variant_id: 1 },
-  {
-    name: 'IDX_line_item_variant_id',
-    partialFilterExpression: {
-      deleted_at: { $exists: false },
-      variant_id: { $exists: true }
-    }
-  }
-);
-
-LineItemSchema.index(
-  { product_id: 1 },
-  {
-    name: 'IDX_line_item_product_id',
-    partialFilterExpression: {
-      deleted_at: { $exists: false },
-      product_id: { $exists: true }
-    }
-  }
-);
-
-LineItemSchema.index(
-  { product_type_id: 1 },
-  {
-    name: 'IDX_line_item_product_type_id',
-    partialFilterExpression: {
-      deleted_at: { $exists: false },
-      product_type_id: { $exists: true }
-    }
-  }
-);
-
-// Middleware for ID generation and cascade delete
-LineItemSchema.pre('save', function(next) {
-  if (!this.id) {
-    this.id = `cali_${Math.random().toString(36).substring(2, 11)}`;
-  }
-  next();
-});
-
-LineItemSchema.pre('deleteOne', { document: true, query: false }, async function(next) {
-  const lineItem = this as LineItemDocument;
-  
-  // Cascade delete adjustments and tax lines
-  await this.model('LineItemAdjustment').deleteMany({ _id: { $in: lineItem.adjustments } });
-  await this.model('LineItemTaxLine').deleteMany({ _id: { $in: lineItem.tax_lines } });
-  
-  next();
-});

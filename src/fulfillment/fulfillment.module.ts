@@ -16,6 +16,7 @@ import { ShippingOptionRule, ShippingOptionRuleSchema } from './entities/shippin
 import { ShippingOptionType, ShippingOptionTypeSchema } from './entities/shipping-option-type.entity';
 import { ShippingProfile, ShippingProfileSchema } from './entities/shipping-profile.entity';
 import { FulfillmentAddress, FulfillmentAddressSchema } from './entities/fulfillment-address.entity';
+import { Order, OrderSchema } from 'src/order/entities/CommandePrincipale/order.entity';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { FulfillmentAddress, FulfillmentAddressSchema } from './entities/fulfill
       { name: ShippingOptionRule.name, schema: ShippingOptionRuleSchema },
       { name: ShippingOptionType.name, schema: ShippingOptionTypeSchema },
       { name: ShippingProfile.name, schema: ShippingProfileSchema },
+      { name: Order.name, schema: OrderSchema },
     ]),
   ],
   controllers: [FulfillmentController],

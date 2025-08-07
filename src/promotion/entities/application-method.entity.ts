@@ -87,15 +87,3 @@ export class ApplicationMethod extends Document {
 }
 
 export const ApplicationMethodSchema = SchemaFactory.createForClass(ApplicationMethod);
-
-// Create indexes
-ApplicationMethodSchema.index({ type: 1 }, { name: 'IDX_application_method_type' });
-ApplicationMethodSchema.index({ target_type: 1 }, { name: 'IDX_application_method_target_type' });
-ApplicationMethodSchema.index({ allocation: 1 }, { name: 'IDX_application_method_allocation' });
-ApplicationMethodSchema.index(
-  { currency_code: 1 },
-  { 
-    name: 'IDX_application_method_currency_code',
-    partialFilterExpression: { deletedAt: { $ne: null } }
-  }
-);

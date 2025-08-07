@@ -61,33 +61,3 @@ export class ShippingOptionRule {
 
 export const ShippingOptionRuleSchema = SchemaFactory.createForClass(ShippingOptionRule);
 
-// Virtual for populated shipping option
-ShippingOptionRuleSchema.virtual('shipping_option_details', {
-  ref: 'ShippingOption',
-  localField: 'shipping_option',
-  foreignField: '_id',
-  justOne: true
-});
-
-// Middleware to maintain inverse relationship
-ShippingOptionRuleSchema.post('save', async function(doc) {
-  await this.model('ShippingOption').updateOne(
-    { _id: doc.shipping_option },
-    { $addToSet: { rules: doc._id } }
-  );
-});
-
-/*/ Middleware for cascading delete
-ShippingOptionRuleSchema.pre('findOneAndDelete', async function(next) {
-  const rule = await this.model.findOne(this.getFilter());
-  
-  if (rule) {
-    // Remove from shipping_option's rules array
-    await this.model('ShippingOption').updateOne(
-      { _id: rule.shipping_option },
-      { $pull: { rules: rule._id } }
-    );
-  }
-  
-  next();
-});*/

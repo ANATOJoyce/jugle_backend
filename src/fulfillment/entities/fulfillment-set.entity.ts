@@ -46,36 +46,3 @@ export class FulfillmentSet {
 
 export const FulfillmentSetSchema = SchemaFactory.createForClass(FulfillmentSet);
 
-// Index unique sur name où deleted_at est null
-FulfillmentSetSchema.index(
-  { name: 1 },
-  { 
-    unique: true,
-    partialFilterExpression: { deleted_at: { $eq: null } }
-  }
-);
-
-// Virtual pour la population des service_zones
-FulfillmentSetSchema.virtual('service_zones_details', {
-  ref: 'ServiceZone',
-  localField: 'service_zones',
-  foreignField: '_id',
-});
-
-// Middleware pour cascades delete (soft delete)
-FulfillmentSetSchema.pre('findOneAndDelete', async function(next) {
-  const fulfillmentSet = await this.model.findOne(this.getFilter());
-  
-  if (fulfillmentSet) {
-    // Soft delete des service_zones associés
-    await this.model.db.model('ServiceZone').updateMany(
-      { _id: { $in: fulfillmentSet.service_zones } },
-      { $set: { deleted_at: new Date() } }
-    );
-  }
-  
-  // Convertit le delete en soft delete
-  this.set({ deleted_at: new Date() });
-  this.model.findOneAndUpdate();
-  next();
-});

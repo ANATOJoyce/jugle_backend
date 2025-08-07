@@ -82,37 +82,3 @@ export class InventoryLevel {
 
 export const InventoryLevelSchema = SchemaFactory.createForClass(InventoryLevel);
 
-// Compound unique index with soft delete filter
-InventoryLevelSchema.index(
-  { inventory_item: 1, location_id: 1 },
-  {
-    name: "IDX_inventory_level_location_id_inventory_item_id",
-    unique: true,
-    partialFilterExpression: { deleted_at: { $eq: null } }
-  }
-);
-
-// Additional indexes
-InventoryLevelSchema.index(
-  { inventory_item: 1 },
-  {
-    name: "IDX_inventory_level_inventory_item_id",
-    partialFilterExpression: { deleted_at: { $eq: null } }
-  }
-);
-
-InventoryLevelSchema.index(
-  { location_id: 1 },
-  {
-    name: "IDX_inventory_level_location_id",
-    partialFilterExpression: { deleted_at: { $eq: null } }
-  }
-);
-
-// Query middleware to exclude soft-deleted documents
-InventoryLevelSchema.pre(/^find/, function(this: any, next) {
-  if (this.getFilter().deleted_at === undefined) {
-    this.where({ deleted_at: null });
-  }
-  next();
-});

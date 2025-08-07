@@ -10,9 +10,13 @@ import { Campaign, CampaignSchema } from './entities/campaign.entity';
 import { PromotionRule, PromotionRuleSchema } from './entities/promotion-rule.entity';
 import { PromotionRuleValue, PromotionRuleValueSchema } from './entities/promotion-rule-value.entity';
 import { Promotion, PromotionSchema } from './entities/promotion.entity';
+import { Product, ProductSchema } from 'src/product/entities/product.entity';
+import { CustomerGroup, CustomerGroupSchema } from 'src/customer/entities/customer-group.entity';
+import { MoneyAmount, MoneyAmountSchema } from 'src/pricing/entities/money-amount.entity';
 
 @Module({
   imports: [
+    
     MongooseModule.forFeature([
       { name: ApplicationMethod.name, schema: ApplicationMethodSchema },
       { name: CampaignBudget.name, schema: CampaignBudgetSchema },
@@ -20,9 +24,15 @@ import { Promotion, PromotionSchema } from './entities/promotion.entity';
       { name: PromotionRule.name, schema: PromotionRuleSchema },
       { name: PromotionRuleValue.name, schema: PromotionRuleValueSchema },
       { name: Promotion.name, schema: PromotionSchema },
+      { name: Product.name, schema: ProductSchema },
+      { name: CustomerGroup.name, schema: CustomerGroupSchema },
+      { name: MoneyAmount.name, schema: MoneyAmountSchema },
+
     ]),
   ],
   controllers: [PromotionController],
   providers: [PromotionService],
 })
 export class PromotionModule {}
+
+/*la conception complète et logique des promotions pour un système e-commerce multivendeur*/

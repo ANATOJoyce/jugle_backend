@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { OrderLineItemAdjustment } from './line-item-adjustment.entity';
-import { OrderLineItemTaxLine } from './line-item-tax-line.entity';
+import { OrderLineItemAdjustment } from './Taxes&Adjustments/line-item-adjustment.entity';
+import { OrderLineItemTaxLine } from './Taxes&Adjustments/line-item-tax-line.entity';
+import { Product } from 'src/product/entities/product.entity';
 
 @Schema({
   timestamps: true,
@@ -19,6 +20,10 @@ import { OrderLineItemTaxLine } from './line-item-tax-line.entity';
 export class OrderLineItem extends Document {
   @Prop({ type: String, required: true })
   title: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'Product', required: true })
+  product: Product;
+
 
   @Prop({ type: String, default: null })
   subtitle: string | null;
@@ -107,71 +112,3 @@ export class OrderLineItem extends Document {
 
 export const OrderLineItemSchema = SchemaFactory.createForClass(OrderLineItem);
 
-// Configuration des index
-OrderLineItemSchema.index(
-  { deleted_at: 1 },
-  { 
-    name: 'IDX_order_line_item_deleted_at',
-    partialFilterExpression: { deleted_at: { $ne: null } }
-  }
-);
-
-OrderLineItemSchema.index(
-  { product_id: 1 },
-  { 
-    name: 'IDX_order_line_item_product_id',
-    partialFilterExpression: { deleted_at: { $ne: null } }
-  }
-);
-
-OrderLineItemSchema.index(
-  { product_type_id: 1 },
-  { 
-    name: 'IDX_line_item_product_type_id',
-    partialFilterExpression: { 
-      product_type_id: { $ne: null },
-      deleted_at: { $ne: null } 
-    }
-  }
-);
-
-OrderLineItemSchema.index(
-  { variant_id: 1 },
-  { 
-    name: 'IDX_order_line_item_variant_id',
-    partialFilterExpression: { deleted_at: { $ne: null } }
-  }
-);
-/*
-// Middleware pour la suppression en cascade
-OrderLineItemSchema.pre('deleteOne', async function() {
-  const itemId = this.getFilter()._id;
-  
-  // Suppression des tax_lines liées
-  await this.model('OrderLineItemTaxLine').deleteMany({ item: itemId });
-  
-  // Suppression des adjustments liés
-  await this.model('OrderLineItemAdjustment').deleteMany({ item: itemId });
-});
-
-// Middleware pour gérer la relation inverse avec OrderLineItemTaxLine
-OrderLineItemSchema.post('save', async function(doc) {
-  // Mise à jour des tax_lines si nécessaire
-  if (doc.tax_lines && doc.tax_lines.length > 0) {
-    await this.model('OrderLineItemTaxLine').updateMany(
-      { _id: { $in: doc.tax_lines } },
-      { $set: { item: doc._id } }
-    );
-  }
-});
-
-// Middleware pour gérer la relation inverse avec OrderLineItemAdjustment
-OrderLineItemSchema.post('save', async function(doc) {
-  // Mise à jour des adjustments si nécessaire
-  if (doc.adjustments && doc.adjustments.length > 0) {
-    await this.model('OrderLineItemAdjustment').updateMany(
-      { _id: { $in: doc.adjustments } },
-      { $set: { item: doc._id } }
-    );
-  }
-});*/

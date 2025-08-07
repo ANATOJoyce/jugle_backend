@@ -56,8 +56,3 @@ export class CampaignBudget extends Document {
 
 export const CampaignBudgetSchema = SchemaFactory.createForClass(CampaignBudget);
 
-// Create index for type
-CampaignBudgetSchema.index(
-  { type: 1 },
-  { name: 'IDX_campaign_budget_type' }
-);

@@ -76,6 +76,10 @@ export class Fulfillment {
   @Prop({ type: Date, default: null })
   deleted_at: Date | null;
 
+  @Prop({ type: Types.ObjectId, ref: 'Order', required: true })
+  order: Types.ObjectId; // Lien vers la commande
+
+
   // Virtuals pour la population
   public items_details?: FulfillmentItem[];
   public labels_details?: FulfillmentLabel[];
@@ -86,72 +90,3 @@ export class Fulfillment {
 
 export const FulfillmentSchema = SchemaFactory.createForClass(Fulfillment);
 
-// Index sur location_id avec condition deleted_at IS NULL
-FulfillmentSchema.index(
-  { location_id: 1 },
-  { 
-    partialFilterExpression: { deleted_at: { $eq: null } }
-  }
-);
-
-// Virtuals pour la population
-FulfillmentSchema.virtual('items_details', {
-  ref: 'FulfillmentItem',
-  localField: 'items',
-  foreignField: '_id'
-});
-
-FulfillmentSchema.virtual('labels_details', {
-  ref: 'FulfillmentLabel',
-  localField: 'labels',
-  foreignField: '_id'
-});
-
-FulfillmentSchema.virtual('provider_details', {
-  ref: 'FulfillmentProvider',
-  localField: 'provider',
-  foreignField: '_id',
-  justOne: true
-});
-
-FulfillmentSchema.virtual('shipping_option_details', {
-  ref: 'ShippingOption',
-  localField: 'shipping_option',
-  foreignField: '_id',
-  justOne: true
-});
-
-FulfillmentSchema.virtual('delivery_address_details', {
-  ref: 'FulfillmentAddress',
-  localField: 'delivery_address',
-  foreignField: '_id',
-  justOne: true
-});
-
-// Middleware pour cascades delete (soft delete)
-FulfillmentSchema.pre('findOneAndDelete', async function(next) {
-  const fulfillment = await this.model.findOne(this.getFilter());
-  
-  if (fulfillment) {
-    // Soft delete des relations
-    await Promise.all([
-      this.model.db.model('FulfillmentItem').updateMany(
-        { _id: { $in: fulfillment.items } },
-        { $set: { deleted_at: new Date() } }
-      ),
-      this.model.db.model('FulfillmentLabel').updateMany(
-        { _id: { $in: fulfillment.labels } },
-        { $set: { deleted_at: new Date() } }
-      ),
-      this.model.db.model('FulfillmentAddress').updateOne(
-        { _id: fulfillment.delivery_address },
-        { $set: { deleted_at: new Date() } }
-      )
-    ]);
-  }
-  
-  // Convertit le delete en soft delete
-  this.set({ deleted_at: new Date() });
-  this.model.findOneAndUpdate();
-  next();
-});

@@ -20,6 +20,5 @@ export class SalesChannel extends Document {
   @Prop({ type: Object })
   metadata?: Record<string, unknown>;
 }
-
-export const SalesChannelSchema = SchemaFactory.createForClass(SalesChannel);
-
+export type SalesChannelDocument = SalesChannel & Document;
+export const SalesChannelSchema = SchemaFactory.createForClass(SalesChannel)

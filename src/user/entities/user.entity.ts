@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document, Types } from 'mongoose';
+import { CustomerGroup } from 'src/customer/entities/customer-group.entity';
+import { Store } from 'src/store/entities/store.entity';
 
 @Schema({
   timestamps: true,
@@ -17,9 +19,6 @@ import { Document } from 'mongoose';
 })
 export class User extends Document {
  
-  @Prop({ unique: true, sparse: true }) 
-  userId?: string;
-
   @Prop({ required: false, index: true })
   first_name?: string;
 
@@ -35,12 +34,23 @@ export class User extends Document {
   @Prop({ required: false, index: true })
   phone?: string;
 
-  @Prop({ required: false, index: true })
-  role?: string;
+  @Prop({ type: String, default: 'user', index: true })
+  role: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'CustomerGroup' })
+  customerGroup?: CustomerGroup | Types.ObjectId;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Store' })
+  store: Store;
 
   @Prop({ type: Date, default: null })
   deleted_at?: Date;
+
+  createdAt?: Date;
+  updatedAt?: Date;
+
+
+
 
 }
 

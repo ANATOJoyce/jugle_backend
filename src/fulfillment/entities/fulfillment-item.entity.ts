@@ -55,14 +55,3 @@ export class FulfillmentItem {
 
 export const FulfillmentItemSchema = SchemaFactory.createForClass(FulfillmentItem);
 
-// Indexes with partial filter for soft delete
-FulfillmentItemSchema.index(
-  { inventory_item_id: 1 },
-  { partialFilterExpression: { deleted_at: { $exists: false } }}
-);
-
-FulfillmentItemSchema.index(
-  { line_item_id: 1 },
-  { partialFilterExpression: { deleted_at: { $exists: false } }}
-);
-

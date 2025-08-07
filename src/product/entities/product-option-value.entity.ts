@@ -20,12 +20,3 @@ export class ProductOptionValue extends Document {
 
 export const ProductOptionValueSchema = SchemaFactory.createForClass(ProductOptionValue);
 
-// Create compound index for option_id and value
-ProductOptionValueSchema.index(
-  { option: 1, value: 1 },
-  {
-    name: "IDX_option_value_option_id_unique",
-    unique: true,
-    partialFilterExpression: { deletedAt: { $eq: null } }
-  }
-);

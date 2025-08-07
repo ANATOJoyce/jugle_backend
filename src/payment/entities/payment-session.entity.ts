@@ -59,6 +59,3 @@ export class PaymentSession {
 }
 
 export const PaymentSessionSchema = SchemaFactory.createForClass(PaymentSession);
-
-// Add index for payment_collection
-PaymentSessionSchema.index({ payment_collection: 1 }, { name: 'IDX_payment_session_payment_collection_id' });

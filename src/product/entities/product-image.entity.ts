@@ -22,12 +22,3 @@ export class ProductImage extends Document {
 
 export const ProductImageSchema = SchemaFactory.createForClass(ProductImage);
 
-// Add indexes
-ProductImageSchema.index(
-  { url: 1 },
-  { 
-    name: "IDX_product_image_url",
-    unique: false,
-    partialFilterExpression: { deletedAt: { $eq: null } }
-  }
-);

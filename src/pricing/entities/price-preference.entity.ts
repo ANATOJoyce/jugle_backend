@@ -18,23 +18,3 @@ export class PricePreference extends Document {
 
 export const PricePreferenceSchema = SchemaFactory.createForClass(PricePreference);
 
-// Create compound index for attribute and value (unique when not deleted)
-PricePreferenceSchema.index(
-  { attribute: 1, value: 1 }, 
-  { 
-    unique: true, 
-    partialFilterExpression: { deleted_at: { $eq: null } },
-    name: 'IDX_price_preference_attribute_value'
-  }
-);
-
-// Soft delete implementation
-PricePreferenceSchema.methods.softDelete = function() {
-  this.deleted_at = new Date();
-  return this.save();
-};
-/*
-// Query helper for non-deleted documents
-PricePreferenceSchema.query.notDeleted = function() {
-  return this.where({ deleted_at: null });
-};*/

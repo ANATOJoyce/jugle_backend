@@ -40,20 +40,3 @@ export class CustomerGroupCustomer {
 
 export const CustomerGroupCustomerSchema = SchemaFactory.createForClass(CustomerGroupCustomer);
 
-// Middleware pour générer l'ID avec préfixe
-CustomerGroupCustomerSchema.pre('save', function(next) {
-  if (!this.id) {
-    this.id = `cusgc_${Math.random().toString(36).substring(2, 11)}`;
-  }
-  next();
-});
-
-// Index composé pour éviter les doublons
-CustomerGroupCustomerSchema.index(
-  { customer: 1, customer_group: 1 },
-  { unique: true }
-);
-
-// Index pour les requêtes inverses
-CustomerGroupCustomerSchema.index({ customer: 1 });
-CustomerGroupCustomerSchema.index({ customer_group: 1 });

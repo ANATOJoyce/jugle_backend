@@ -9,6 +9,8 @@ import { UpsertRegionDto } from './dto/upsert-region.dto';
 import { ListRegionQueryDto } from './dto/list-region-query.dto';
 import { ListCountryQueryDto } from './dto/list-country-query.dto';
 import { InjectConnection } from '@nestjs/mongoose';
+import { CreateCountryDto } from './dto/create-country.dto';
+import { UpdateCountryDto } from './dto/update-country.dto';
 
 @Injectable()
 export class RegionService {
@@ -51,42 +53,42 @@ export class RegionService {
    * Upsert: Met à jour ou crée une région.
    */
   async upsertRegion(regionDto: UpsertRegionDto): Promise<RegionDocument> {
-  const session: ClientSession = await this.connection.startSession();
-  session.startTransaction();
+    const session: ClientSession = await this.connection.startSession();
+    session.startTransaction();
 
-  try {
-    let region: RegionDocument;
+    try {
+      let region: RegionDocument;
 
-    if (regionDto.id) {
-      const found = await this.regionModel.findById(regionDto.id).session(session);
-      if (!found) {
-        throw new NotFoundException(`Region with id ${regionDto.id} not found`);
+      if (regionDto.id) {
+        const found = await this.regionModel.findById(regionDto.id).session(session);
+        if (!found) {
+          throw new NotFoundException(`Region with id ${regionDto.id} not found`);
+        }
+        region = found;
+
+        // Met à jour les champs autorisés
+        region.name = regionDto.name;
+        region.currency_code = regionDto.currency_code;
+        region.automatic_taxes = regionDto.automatic_taxes ?? region.automatic_taxes;
+        region.metadata = regionDto.metadata ?? region.metadata;
+
+        await region.save({ session });
+      } else {
+        region = new this.regionModel(regionDto);
+        await region.save({ session });
       }
-      region = found;
 
-      // Met à jour les champs autorisés
-      region.name = regionDto.name;
-      region.currency_code = regionDto.currency_code;
-      region.automatic_taxes = regionDto.automatic_taxes ?? region.automatic_taxes;
-      region.metadata = regionDto.metadata ?? region.metadata;
+      await session.commitTransaction();
+      return region;
 
-      await region.save({ session });
-    } else {
-      region = new this.regionModel(regionDto);
-      await region.save({ session });
+    } catch (err) {
+      await session.abortTransaction();
+      throw err;
+
+    } finally {
+      session.endSession();
     }
-
-    await session.commitTransaction();
-    return region;
-
-  } catch (err) {
-    await session.abortTransaction();
-    throw err;
-
-  } finally {
-    session.endSession();
   }
-}
 
 
   async listRegions(query?: ListRegionQueryDto): Promise<RegionDocument[]> {
@@ -141,4 +143,34 @@ export class RegionService {
     if (!country) throw new NotFoundException(`Country with id ${id} not found`);
     return country;
   }
+
+  async createCountry(dto: CreateCountryDto) {
+    return this.countryModel.create(dto);
+  }
+
+  async updateCountry(id: string, dto: UpdateCountryDto) {
+    return this.countryModel.findByIdAndUpdate(id, dto, { new: true });
+  }
+
+  async deleteCountry(id: string) {
+    return this.countryModel.findByIdAndDelete(id);
+  }
+
+  // region.service.ts
+async create(dto: CreateRegionDto): Promise<Region> {
+  const countries = await this.countryModel.find({
+    _id: { $in: dto.countryIds },
+  });
+
+  const region = new this.regionModel({
+    name: dto.name,
+    currency_code: dto.currency_code,
+    automatic_taxes: dto.automatic_taxes ?? true,
+    countries: countries.map(c => c._id),
+    metadata: dto.metadata || {},
+  });
+
+  return region.save();
+}
+
 }

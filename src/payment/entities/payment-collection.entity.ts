@@ -72,11 +72,3 @@ export class PaymentCollection {
 
 export const PaymentCollectionSchema =
   SchemaFactory.createForClass(PaymentCollection);
-
-// Cascade delete for payment_sessions and payments (handled in DB hooks or service layer)
-PaymentCollectionSchema.pre('deleteOne', async function (next) {
-  const paymentCollectionId = this.getQuery()._id;
-  // Implement cascade delete logic here (e.g., using Mongoose models)
-  // Example: await PaymentSession.deleteMany({ payment_collection: paymentCollectionId });
-  next();
-});

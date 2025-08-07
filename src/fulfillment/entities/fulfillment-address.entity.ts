@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
+import { Fulfillment } from './fulfillment.entity';
 
 export type FulfillmentAddressDocument = FulfillmentAddress & Document;
 
@@ -48,6 +49,14 @@ export class FulfillmentAddress {
 
   @Prop({ type: Object })
   metadata?: Record<string, any>;
+
+  @Prop({
+  type: Types.ObjectId,
+  ref: 'Fulfillment',
+  required: true
+  })
+  fulfillment: Types.ObjectId | Fulfillment;
+
 }
 
 export const FulfillmentAddressSchema = SchemaFactory.createForClass(FulfillmentAddress);

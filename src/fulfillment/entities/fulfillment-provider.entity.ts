@@ -31,11 +31,3 @@ export class FulfillmentProvider {
 }
 
 export const FulfillmentProviderSchema = SchemaFactory.createForClass(FulfillmentProvider);
-
-// Middleware pour s'assurer que l'ID est généré avant la sauvegarde
-FulfillmentProviderSchema.pre('save', function(next) {
-  if (!this.id) {
-    this.id = `serpro_${new Types.ObjectId().toString()}`;
-  }
-  next();
-});

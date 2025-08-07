@@ -58,19 +58,3 @@ export class PromotionRule extends Document {
 }
 
 export const PromotionRuleSchema = SchemaFactory.createForClass(PromotionRule);
-
-// Add cascading delete for values
-PromotionRuleSchema.pre(
-  'deleteOne',
-  { document: true, query: false },
-  async function (next) {
-    await this.model('PromotionRuleValue').deleteMany({
-      promotion_rule: this._id,
-    });
-    next();
-  },
-);
-
-// Add indexes
-PromotionRuleSchema.index({ attribute: 1 });
-PromotionRuleSchema.index({ operator: 1 });

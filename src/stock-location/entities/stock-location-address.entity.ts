@@ -1,6 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
-import { StockLocation } from './stock-location.entity';
+import { HydratedDocument, Types } from 'mongoose';
+import { Country } from '../../region/entities/country.entity';
+import { Region } from '../../region/entities/region.entity';
+
+export type StockLocationAddressDocument = HydratedDocument<StockLocationAddress>;
 
 @Schema({
   timestamps: true,
@@ -15,7 +18,7 @@ import { StockLocation } from './stock-location.entity';
   },
   collection: 'stock_location_addresses',
 })
-export class StockLocationAddress extends Document {
+export class StockLocationAddress {
   @Prop({ required: true, trim: true })
   address_1: string;
 
@@ -28,36 +31,20 @@ export class StockLocationAddress extends Document {
   @Prop({ trim: true })
   city?: string;
 
-  @Prop({ required: true, trim: true })
-  country_code: string;
+  @Prop({ type: Types.ObjectId, ref: Country.name, required: true })
+  country: Country;
 
-  @Prop({ trim: true })
-  phone?: string;
-
-  @Prop({ trim: true })
-  province?: string;
+  @Prop({ type: Types.ObjectId, ref: Region.name })
+  region?: Region;
 
   @Prop({ trim: true })
   postal_code?: string;
 
-  @Prop({ type: Object })
-  metadata?: Record<string, unknown>;
+  @Prop({ trim: true })
+  phone?: string;
 
-  @Prop({
-    type: MongooseSchema.Types.ObjectId,
-    ref: 'StockLocation',
-  })
-  stock_location?: StockLocation;
+  @Prop({ type: Object, default: {} })
+  metadata?: Record<string, unknown>;
 }
 
 export const StockLocationAddressSchema = SchemaFactory.createForClass(StockLocationAddress);
-
-// Cascading delete implementation
-StockLocationAddressSchema.pre('deleteOne', { document: true, query: false }, async function(next) {
-  try {
-    await this.model('StockLocation').deleteOne({ address: this._id });
-    next();
-  } catch (err) {
-    next(err);
-  }
-});

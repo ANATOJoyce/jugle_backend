@@ -39,12 +39,3 @@ export class ProductCategory extends Document {
 }
 
 export const ProductCategorySchema = SchemaFactory.createForClass(ProductCategory);
-
-// Add indexes
-ProductCategorySchema.index({ mpath: 1 }, {
-  name: "IDX_product_category_path",
-  unique: false,
-  partialFilterExpression: { deletedAt: { $eq: null } }
-});
-
-// The handle unique index is already defined in the @Prop decorator

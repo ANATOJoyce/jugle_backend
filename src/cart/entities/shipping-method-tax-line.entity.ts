@@ -12,7 +12,7 @@ export class ShippingMethodTaxLine implements BaseShippingMethodTaxLine {
   @Prop({
     required: true,
     unique: true,
-    default: () => `casmtxl_${new Types.ObjectId().toHexString()}`
+    default: () => `casmtxl_${new Types.ObjectId()}`
   })
   id: string;
 
@@ -43,8 +43,3 @@ export class ShippingMethodTaxLine implements BaseShippingMethodTaxLine {
 
 export const ShippingMethodTaxLineSchema = SchemaFactory.createForClass(ShippingMethodTaxLine);
 
-// Indexes
-ShippingMethodTaxLineSchema.index(
-  { shipping_method: 1 },
-  { name: 'shipping_method_index' }
-);

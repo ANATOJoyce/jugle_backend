@@ -8,11 +8,14 @@ import { ProductImage } from './product-image.entity';
 import { ProductCollection } from './product-collection.entity';
 import { ProductCategory } from './product-category.entity';
 
+
+import { Store } from 'src/store/entities/store.entity';
+
 export enum ProductStatus {
-  DRAFT = 'draft',
-  PROPOSED = 'proposed',
-  PUBLISHED = 'published',
-  REJECTED = 'rejected',
+  DRAFT = 'draft',//nomvisible
+  PROPOSED = 'proposed',//propose
+  PUBLISHED = 'published',//publié
+  REJECTED = 'rejected',//regeter par l'admin
 }
 
 @Schema({ timestamps: true })
@@ -75,6 +78,10 @@ export class Product extends Document {
   @Prop({ type: Object })
   metadata: Record<string, any>;
 
+  @Prop({ type: Types.ObjectId, ref: 'Store', required: true })
+  store: Store;
+
+
   @Prop({ type: [{ type: Types.ObjectId, ref: 'ProductVariant' }] })
   variants: ProductVariant[];
 
@@ -102,65 +109,3 @@ export class Product extends Document {
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
 
-// Implement cascading delete for related entities
-ProductSchema.pre('deleteOne', { document: true, query: false }, async function(next) {
-  const product = this;
-  
-  // Delete all related variants
-  await product.model('ProductVariant').deleteMany({ product: product._id });
-  
-  // Delete all related options
-  await product.model('ProductOption').deleteMany({ product: product._id });
-  
-  // Delete all related images
-  await product.model('ProductImage').deleteMany({ product: product._id });
-  
-  next();
-});
-
-// Create indexes
-ProductSchema.index(
-  { handle: 1 },
-  { 
-    unique: true,
-    partialFilterExpression: { deleted_at: { $eq: null } },
-    name: 'IDX_product_handle_unique'
-  }
-);
-
-ProductSchema.index(
-  { type: 1 },
-  { 
-    partialFilterExpression: { deleted_at: { $eq: null } },
-    name: 'IDX_product_type_id'
-  }
-);
-
-ProductSchema.index(
-  { collection: 1 },
-  { 
-    partialFilterExpression: { deleted_at: { $eq: null } },
-    name: 'IDX_product_collection_id'
-  }
-);
-
-// Text indexes for searchable fields
-ProductSchema.index(
-  { title: 'text', subtitle: 'text', description: 'text' },
-  { 
-    name: 'IDX_product_searchable_fields',
-    weights: { title: 3, subtitle: 2, description: 1 }
-  }
-);
-
-// Soft delete implementation
-ProductSchema.methods.softDelete = function() {
-  this.deleted_at = new Date();
-  return this.save();
-};
-/*
-// Query helper for non-deleted documents
-ProductSchema.query.notDeleted = function() {
-  return this.where({ deleted_at: null });
-};
-*/

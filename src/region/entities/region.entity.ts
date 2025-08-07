@@ -30,5 +30,3 @@ export class Region {
 
 export const RegionSchema = SchemaFactory.createForClass(Region);
 
-// Add text indexes for searchable fields
-RegionSchema.index({ name: 'text', currency_code: 'text' });

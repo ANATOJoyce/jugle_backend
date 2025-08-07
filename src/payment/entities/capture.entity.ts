@@ -25,5 +25,3 @@ export class Capture {
 
 export const CaptureSchema = SchemaFactory.createForClass(Capture);
 
-// Add index for payment_id
-CaptureSchema.index({ payment: 1 }, { name: 'IDX_capture_payment_id' });

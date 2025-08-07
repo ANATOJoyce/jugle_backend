@@ -1,102 +1,152 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseInterceptors, UploadedFile, Req, UseGuards, Query, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { ProductService } from './product.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CloudinaryService } from './cloudinary.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/roles.guards';
+import { Roles } from 'src/auth/roles.decorator';
+import { Role } from 'src/auth/role.enum';
+import { ProductStatus } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { CreateProductCategoryDto } from './dto/category/create-product-category.dto';
-import { UpdateProductCategoryDto } from './dto/category/update-product-category.dto';
-import { CreateProductCollectionDto } from './dto/collection/create-product-collection.dto';
-import { UpdateProductCollectionDto } from './dto/collection/update-product-collection.dto';
-import { CreateProductOptionDto } from './dto/option/create-product-option.dto';
-import { UpdateProductOptionDto } from './dto/option/update-product-option.dto';
-import { CreateProductOptionValueDto } from './dto/option-value/create-product-option-value.dto';
-import { UpdateProductOptionValueDto } from './dto/option-value/update-product-option-value.dto';
 import { CreateProductVariantDto } from './dto/variant/create-product-variant.dto';
-import { UpdateProductVariantDto } from './dto/variant/update-product-variant.dto';
+import { CreateProductCategoryDto } from './dto/category/create-product-category.dto';
+import { CreateProductCollectionDto } from './dto/collection/create-product-collection.dto';
 import { CreateProductTagDto } from './dto/tag/create-product-tag.dto';
-import { UpdateProductTagDto } from './dto/tag/update-product-tag.dto';
+import { CreateProductOptionDto } from './dto/option/create-product-option.dto';
+import { CreateProductOptionValueDto } from './dto/option-value/create-product-option-value.dto';
+import { CurrentStore } from 'src/store/current-store.decorator';
+import { Store } from 'src/store/entities/store.entity';
+import { User } from 'src/user/user.decorator';
+import { OwnerGuard } from 'src/auth/owner.guard';
+import { AuthRequest } from 'src/types/auth-request';
+import { AuthGuard } from '@nestjs/passport';
+import { StoreGuard } from 'src/store/store.guard';
+
+// DTO Imports
 
 @Controller('product')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly cloudinaryService: CloudinaryService
+  ) {}
 
-// product
+  // ==============================================
+  // SECTION 1: CORE PRODUCT OPERATIONS
+  // ==============================================
+  
+
+
 
   @Post()
-  createProduct(@Body() dto: CreateProductDto) {
-    return this.productService.createProduct(dto);
+ // @UseGuards(JwtAuthGuard) 
+  async create(@Req() req: AuthRequest, @Body() dto: CreateProductDto) {
+    const storeId = req.user?.store?._id;
+    if (!storeId) {
+      throw new BadRequestException('Aucune boutique associée à cet utilisateur');
+    }
+    return this.productService.create(dto, storeId);
   }
 
-  @Patch(':id')
-  updateProduct(@Param('id') id: string, @Body() dto: UpdateProductDto) {
-    return this.productService.updateProduct(id, dto);
-  }
 
-  @Put('upsert/:title')
-  upsertProduct(@Param('title') title: string, @Body() dto: CreateProductDto) {
-    return this.productService.upsertProduct(title, dto);
-  }
 
-  @Patch(':id/soft-delete')
-  softDeleteProduct(@Param('id') id: string) {
-    return this.productService.softDeleteProduct(id);
-  }
-
-  @Delete(':id')
-  deleteProduct(@Param('id') id: string) {
-    return this.productService.deleteProduct(id);
-  }
-
-  @Post(':id/restore')
-  restoreProduct(@Param('id') id: string) {
-    return this.productService.restoreProduct(id);
-  }
-
-  @Get()
-  listProducts() {
-    return this.productService.listProducts();
-  }
-
-  @Get('list-and-count')
-  listAndCountProducts() {
-    return this.productService.listAndCountProducts();
-  }
 
   @Get(':id')
-  retrieveProduct(@Param('id') id: string) {
+  @Roles(Role.ADMIN, Role.VENDOR)
+  findOne(@Param('id') id: string) {
     return this.productService.retrieveProduct(id);
   }
 
-// product categories
+  @Put(':id')
+  @Roles(Role.ADMIN, Role.VENDOR)
+  update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
+    return this.productService.updateProduct(id, dto);
+  }
 
+  @Delete(':id')
+  @Roles(Role.ADMIN, Role.VENDOR)
+  remove(@Param('id') id: string) {
+    return this.productService.deleteProduct(id);
+  }
+
+  @UseGuards(AuthGuard('jwt'), StoreGuard)
+  @Get('store/me')
+  async getVendorProducts(@CurrentStore() store: Store) {
+    return this.productService.findAllByStoreId(store.id);
+  }
+ 
+  // ==============================================
+  // SECTION 2: PRODUCT STATUS MANAGEMENT
+  // ==============================================
+
+  @Put(':id/revert-draft')
+  @Roles(Role.VENDOR)
+  revertDraft(@Param('id') id: string) {
+    return this.productService.changeProductStatus(id, ProductStatus.DRAFT);
+  }
+
+  @Put(':id/propose')
+  @Roles(Role.VENDOR)
+  proposeProduct(@Param('id') id: string) {
+    return this.productService.changeProductStatus(id, ProductStatus.PROPOSED);
+  }
+
+  @Put(':id/publish')
+  @Roles(Role.ADMIN)
+  publishProduct(@Param('id') id: string) {
+    return this.productService.changeProductStatus(id, ProductStatus.PUBLISHED);
+  }
+
+  @Put(':id/reject')
+  @Roles(Role.ADMIN)
+  rejectProduct(@Param('id') id: string) {
+    return this.productService.changeProductStatus(id, ProductStatus.REJECTED);
+  }
+
+
+  // ==============================================
+  // SECTION 3: PRODUCT IMAGE MANAGEMENT
+  // ==============================================
+
+  @Post('upload-image')
+  @UseInterceptors(FileInterceptor('file'))
+  @Roles(Role.ADMIN, Role.VENDOR)
+  async uploadImage(@UploadedFile() file: Express.Multer.File) {
+    const imageUrl = await this.cloudinaryService.uploadImage(file);
+    return { url: imageUrl };
+  }
+
+  // ==============================================
+  // SECTION 4: PRODUCT VARIANTS
+  // ==============================================
+
+  @Post('variants')
+  @Roles(Role.ADMIN, Role.VENDOR)
+  createVariant(@Body() dto: CreateProductVariantDto) {
+    return this.productService.createVariant(dto);
+  }
+
+  @Get('variants')
+  @Roles(Role.ADMIN, Role.VENDOR)
+  listVariants() {
+    return this.productService.listProductVariants();
+  }
+
+  @Get('variants/:id')
+  @Roles(Role.ADMIN, Role.VENDOR)
+  getVariant(@Param('id') id: string) {
+    return this.productService.retrieveProductVariant(id);
+  }
+
+  // ==============================================
+  // SECTION 5: PRODUCT CATEGORIES
+  // ==============================================
 
   @Post('categories')
+  @Roles(Role.ADMIN, Role.VENDOR)
   createCategory(@Body() dto: CreateProductCategoryDto) {
     return this.productService.createProductCategory(dto);
-  }
-
-  @Patch('categories/:id')
-  updateCategory(@Param('id') id: string, @Body() dto: UpdateProductCategoryDto) {
-    return this.productService.updateProductCategory(id, dto);
-  }
-
-  @Put('categories/upsert/:handle')
-  upsertCategory(@Param('handle') handle: string, @Body() dto: CreateProductCategoryDto) {
-    return this.productService.upsertProductCategory(handle, dto);
-  }
-
-  @Patch('categories/:id/soft-delete')
-  softDeleteCategory(@Param('id') id: string) {
-    return this.productService.softDeleteProductCategory(id);
-  }
-
-  @Delete('categories/:id')
-  deleteCategory(@Param('id') id: string) {
-    return this.productService.deleteProductCategory(id);
-  }
-
-  @Post('categories/:id/restore')
-  restoreCategory(@Param('id') id: string) {
-    return this.productService.restoreProductCategory(id);
   }
 
   @Get('categories')
@@ -104,46 +154,14 @@ export class ProductController {
     return this.productService.listProductCategories();
   }
 
-  @Get('categories/list-and-count')
-  listAndCountCategories() {
-    return this.productService.listAndCountProductCategories();
-  }
-
-  @Get('categories/:id')
-  retrieveCategory(@Param('id') id: string) {
-    return this.productService.retrieveProductCategory(id);
-  }
-
-//collection 
+  // ==============================================
+  // SECTION 6: PRODUCT COLLECTIONS
+  // ==============================================
 
   @Post('collections')
+  @Roles(Role.ADMIN, Role.VENDOR)
   createCollection(@Body() dto: CreateProductCollectionDto) {
     return this.productService.createProductCollection(dto);
-  }
-
-  @Patch('collections/:id')
-  updateCollection(@Param('id') id: string, @Body() dto: UpdateProductCollectionDto) {
-    return this.productService.updateProductCollection(id, dto);
-  }
-
-  @Put('collections/upsert/:handle')
-  upsertCollection(@Param('handle') handle: string, @Body() dto: CreateProductCollectionDto) {
-    return this.productService.upsertProductCollection(handle, dto);
-  }
-
-  @Patch('collections/:id/soft-delete')
-  softDeleteCollection(@Param('id') id: string) {
-    return this.productService.softDeleteProductCollection(id);
-  }
-
-  @Delete('collections/:id')
-  deleteCollection(@Param('id') id: string) {
-    return this.productService.deleteProductCollection(id);
-  }
-
-  @Post('collections/:id/restore')
-  restoreCollection(@Param('id') id: string) {
-    return this.productService.restoreProductCollection(id);
   }
 
   @Get('collections')
@@ -151,204 +169,85 @@ export class ProductController {
     return this.productService.listProductCollections();
   }
 
-  @Get('collections/list-and-count')
-  listAndCountCollections() {
-    return this.productService.listAndCountProductCollections();
-  }
-
-  @Get('collections/:id')
-  retrieveCollection(@Param('id') id: string) {
-    return this.productService.retrieveProductCollection(id);
-  }
-
-// ProductOption
-
-  @Post('options')
-  createOption(@Body() dto: CreateProductOptionDto) {
-    return this.productService.createProductOption(dto);
-  }
-
-  @Patch('options/:id')
-  updateOption(@Param('id') id: string, @Body() dto: UpdateProductOptionDto) {
-    return this.productService.updateProductOption(id, dto);
-  }
-
-  @Put('options/upsert/:title')
-  upsertOption(@Param('title') title: string, @Body() dto: CreateProductOptionDto) {
-    return this.productService.upsertProductOption(title, dto);
-  }
-
-  @Patch('options/:id/soft-delete')
-  softDeleteOption(@Param('id') id: string) {
-    return this.productService.softDeleteProductOption(id);
-  }
-
-  @Delete('options/:id')
-  deleteOption(@Param('id') id: string) {
-    return this.productService.deleteProductOption(id);
-  }
-
-  @Post('options/:id/restore')
-  restoreOption(@Param('id') id: string) {
-    return this.productService.restoreProductOption(id);
-  }
-
-  @Get('options')
-  listOptions() {
-    return this.productService.listProductOptions();
-  }
-
-  @Get('options/list-and-count')
-  listAndCountOptions() {
-    return this.productService.listAndCountProductOptions();
-  }
-
-  @Get('options/:id')
-  retrieveOption(@Param('id') id: string) {
-    return this.productService.retrieveProductOption(id);
-  }
-
-//ProductValue 
-
-
-  @Post('option-values')
-  createOptionValue(@Body() dto: CreateProductOptionValueDto) {
-    return this.productService.createProductOptionValue(dto);
-  }
-
-  @Patch('option-values/:id')
-  updateOptionValue(@Param('id') id: string, @Body() dto: UpdateProductOptionValueDto) {
-    return this.productService.updateProductOptionValue(id, dto);
-  }
-
-  @Put('option-values/upsert/:value')
-  upsertOptionValue(@Param('value') value: string, @Body() dto: CreateProductOptionValueDto) {
-    return this.productService.upsertProductOptionValue(value, dto);
-  }
-
-  @Patch('option-values/:id/soft-delete')
-  softDeleteOptionValue(@Param('id') id: string) {
-    return this.productService.softDeleteProductOptionValue(id);
-  }
-
-  @Delete('option-values/:id')
-  deleteOptionValue(@Param('id') id: string) {
-    return this.productService.deleteProductOptionValue(id);
-  }
-
-  @Post('option-values/:id/restore')
-  restoreOptionValue(@Param('id') id: string) {
-    return this.productService.restoreProductOptionValue(id);
-  }
-
-  @Get('option-values')
-  listOptionValues() {
-    return this.productService.listProductOptionValues();
-  }
-
-  @Get('option-values/list-and-count')
-  listAndCountOptionValues() {
-    return this.productService.listAndCountProductOptionValues();
-  }
-
-  @Get('option-values/:id')
-  retrieveOptionValue(@Param('id') id: string) {
-    return this.productService.retrieveProductOptionValue(id);
-  }
-//ProductVariant
-
-  @Post('variants')
-  createVariant(@Body() dto: CreateProductVariantDto) {
-    return this.productService.createProductVariant(dto);
-  }
-
-  @Patch('variants/:id')
-  updateVariant(@Param('id') id: string, @Body() dto: UpdateProductVariantDto) {
-    return this.productService.updateProductVariant(id, dto);
-  }
-
-  @Put('variants/upsert/:sku')
-  upsertVariant(@Param('sku') sku: string, @Body() dto: CreateProductVariantDto) {
-    return this.productService.upsertProductVariant(sku, dto);
-  }
-
-  @Patch('variants/:id/soft-delete')
-  softDeleteVariant(@Param('id') id: string) {
-    return this.productService.softDeleteProductVariant(id);
-  }
-
-  @Delete('variants/:id')
-  deleteVariant(@Param('id') id: string) {
-    return this.productService.deleteProductVariant(id);
-  }
-
-  @Post('variants/:id/restore')
-  restoreVariant(@Param('id') id: string) {
-    return this.productService.restoreProductVariant(id);
-  }
-
-  @Get('variants')
-  listVariants() {
-    return this.productService.listProductVariants();
-  }
-
-  @Get('variants/list-and-count')
-  listAndCountVariants() {
-    return this.productService.listAndCountProductVariants();
-  }
-
-  @Get('variants/:id')
-  retrieveVariant(@Param('id') id: string) {
-    return this.productService.retrieveProductVariant(id);
-  }
-
-//prodcuct tags
+  // ==============================================
+  // SECTION 7: PRODUCT TAGS
+  // ==============================================
 
   @Post('tags')
+  @Roles(Role.ADMIN, Role.VENDOR)
   createTag(@Body() dto: CreateProductTagDto) {
     return this.productService.createProductTag(dto);
   }
 
-  @Patch('tags/:id')
-  updateTag(@Param('id') id: string, @Body() dto: UpdateProductTagDto) {
-    return this.productService.updateProductTag(id, dto);
-  }
-
-  @Put('tags/upsert/:name')
-  upsertTag(@Param('name') name: string, @Body() dto: CreateProductTagDto) {
-    return this.productService.upsertProductTag(name, dto);
-  }
-
-  @Patch('tags/:id/soft-delete')
-  softDeleteTag(@Param('id') id: string) {
-    return this.productService.softDeleteProductTag(id);
-  }
-
-  @Delete('tags/:id')
-  deleteTag(@Param('id') id: string) {
-    return this.productService.deleteProductTag(id);
-  }
-
-  @Post('tags/:id/restore')
-  restoreTag(@Param('id') id: string) {
-    return this.productService.restoreProductTag(id);
-  }
-
   @Get('tags')
+  @Roles(Role.ADMIN, Role.VENDOR)
   listTags() {
     return this.productService.listProductTags();
   }
 
-  @Get('tags/list-and-count')
-  listAndCountTags() {
-    return this.productService.listAndCountProductTags();
+
+  @Post('options')
+  @Roles(Role.ADMIN, Role.VENDOR)
+  createOption(@Body() dto: CreateProductOptionDto) {
+    return this.productService.createProductOption(dto);
   }
 
-  @Get('tags/:id')
-  retrieveTag(@Param('id') id: string) {
-    return this.productService.retrieveProductTag(id);
+  @Post('option-values')
+  @Roles(Role.ADMIN, Role.VENDOR)
+  createOptionValue(@Body() dto: CreateProductOptionValueDto) {
+    return this.productService.createProductOptionValue(dto);
+  }
+
+  // ==============================================
+  // SECTION 9: PUBLIC ENDPOINTS
+  // ==============================================
+@Get('public/pagination')
+async getPublishedProducts(
+  @Query('page') page = 1,
+  @Query('limit') limit = 10,
+  @Query('search') search = '',
+  @Query('sort') sort = '-createdAt',
+  @Query('category') category?: string,
+  @Query('minPrice') minPrice?: string,
+  @Query('maxPrice') maxPrice?: string
+) {
+  // Convertir les minPrice et maxPrice en nombres si définis
+  const filters = {
+    search,
+    category,
+    minPrice: minPrice ? parseFloat(minPrice) : undefined,  // Utilisation de parseFloat pour plus de sécurité
+    maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,  // Utilisation de parseFloat pour plus de sécurité
+  };
+
+  // Appel du service pour obtenir les produits avec les filtres
+  return this.productService.getProductsWithFilters(
+    Number(page),       // Page convertie en nombre
+    Number(limit),      // Limit converti en nombre
+    filters,            // Filtrage dynamique basé sur les paramètres
+    sort                // Tri des produits
+  );
+}
+
+
+  @Get('recommendations')
+  async getRecommendations(@Query('budget') budget: string) {
+    const parsedBudget = parseFloat(budget);
+    if (isNaN(parsedBudget)) {
+      throw new BadRequestException('Budget must be a valid number');
+    }
+    return this.productService.recommendProductsByBudget(parsedBudget);
   }
 
 
+  @Patch(':id/soft-delete')
+  @Roles(Role.ADMIN, Role.VENDOR)
+  softDelete(@Param('id') id: string) {
+    return this.productService.softDeleteProduct(id);
+  }
 
+  @Post(':id/restore')
+  @Roles(Role.ADMIN, Role.VENDOR)
+  restore(@Param('id') id: string) {
+    return this.productService.restoreProduct(id);
+  }
 }

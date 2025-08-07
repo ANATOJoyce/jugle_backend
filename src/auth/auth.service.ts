@@ -1,5 +1,5 @@
 // auth.service.ts
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException, Post, UseGuards } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -8,12 +8,20 @@ import { User } from 'src/user/entities/user.entity';
 import { RegisterDto } from './dto/Register.dto';
 import { AuthIdentity, AuthIdentityDocument } from './entities/auth-identity.entity';
 import { ProviderIdentity, ProviderIdentityDocument } from './entities/provider-identity.entity';
-import { Model } from 'mongoose';
+import { isValidObjectId, Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UpdateAuthIdentityDto } from './dto/update-auth-identity.dto';
 import { UpdateProviderIdentityDto } from './dto/update-provide-identity.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
+import { Role } from './role.enum';
+import { VerificationCode } from './entities/verification-code.entity';
+import { MailService } from '../mail/mail.service';
+import { RequestCodeDto } from './dto/request-code.dto';
+import { TokensDto } from './dto/tokens.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from './roles.guards';
+
 
 @Injectable()
 export class AuthService {
@@ -25,11 +33,21 @@ export class AuthService {
     @InjectModel(AuthIdentity.name)
     private readonly authIdentityModel: Model<AuthIdentityDocument>,
 
+    @InjectModel(User.name)
+    private readonly userModel: Model<User>,
+
     @InjectModel(ProviderIdentity.name)
     private readonly providerIdentityModel: Model<ProviderIdentityDocument>,
+    @InjectModel(VerificationCode.name) // 'VerificationCode'
+    private readonly verificationCodeModel: Model<VerificationCode>,
+    private mailService: MailService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<{ access_token: string }> {
+  // auth.service.ts
+  private readonly refreshTokens: Map<string, string> = new Map();
+
+
+  async register(registerDto: RegisterDto): Promise<{ access_token: string; refresh_token: string }> {
     const { phone, email, password, first_name, last_name } = registerDto;
 
     const existingUserByPhone = await this.userService.findByPhone(phone);
@@ -38,6 +56,12 @@ export class AuthService {
     }
 
     if (email) {
+      // Vérifie aussi dans "users"
+      const existingUserByEmail = await this.userService.findByEmail(email);
+      if (existingUserByEmail) {
+        throw new BadRequestException('Un utilisateur avec cet email existe déjà.');
+      }
+
       const existingAuthIdentityByEmail = await this.authIdentityModel.findOne({ email });
       if (existingAuthIdentityByEmail) {
         throw new BadRequestException('Un utilisateur avec cet email existe déjà.');
@@ -49,74 +73,136 @@ export class AuthService {
     const newUser = await this.userService.createUser({
       phone,
       first_name,
-      email,
       last_name,
-      password
-    });
-
-    const authIdentity = new this.authIdentityModel({
-      username: `${first_name}.${last_name}`.toLowerCase(),
       email,
       password: hashedPassword,
-      phone: phone,
-      userId: newUser._id,
-    });
-    await authIdentity.save();
-
-    return this.generateToken(newUser, authIdentity);
-  }
-
-  async signIn(phoneOrEmail: string, password: string): Promise<{ access_token: string }> {
-    const authIdentity = await this.authIdentityModel.findOne({
-      $or: [{ phone: phoneOrEmail }, { email: phoneOrEmail }],
+      role: Role.VENDOR,
     });
 
-    if (!authIdentity) {
-      throw new UnauthorizedException('Identité non trouvée.');
+    // Génère un username unique : joyce.anato, joyce.anato1, etc.
+    let baseUsername = `${first_name}.${last_name}`.toLowerCase().replace(/\s+/g, '');
+    let username = baseUsername;
+    let counter = 1;
+    while (await this.authIdentityModel.findOne({ username })) {
+      username = `${baseUsername}${counter}`;
+      counter++;
     }
 
-    const isPasswordValid = await bcrypt.compare(password, authIdentity.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Mot de passe incorrect.');
+    const authIdentity = new this.authIdentityModel({
+      username,
+      email,
+      password: hashedPassword,
+      phone,
+      user: newUser._id,
+    });
+
+    try {
+      await authIdentity.save();
+    } catch (error) {
+      if (error.code === 11000 && error.keyPattern?.username) {
+        throw new BadRequestException(
+          "Un utilisateur avec ce nom et prénom existe déjà. Veuillez en choisir d'autres."
+        );
+      }
+      throw error;
     }
 
-    const user = await this.userService.findByPhone(authIdentity.phone);
-    if (!user) {
-      throw new UnauthorizedException('Utilisateur introuvable.');
-    }
-
-    return this.generateToken(user, authIdentity);
+    return this.generateTokens(newUser, authIdentity);
   }
 
-  public generateToken(user: User, authIdentity: AuthIdentity): { access_token: string } {
-    const payload = {
-      sub: user.id,
-      auth_identity: authIdentity.id,
-      phone: user.phone,
-      first_name: user.first_name,
-    };
+      
 
-    return {
-      access_token: this.jwtService.sign(payload, {
-        expiresIn: '1h',
-        secret: process.env.JWT_SECRET,
-      }),
-    };
+
+  generateTokens(user: User, identity: AuthIdentity): TokensDto {
+  const accessPayload = {
+    sub: user._id,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    first_name: user.first_name,
+  };
+
+  const refreshPayload = {
+    sub: user._id,
+    identityId: identity.id,
+  };
+
+  return {
+    access_token: this.jwtService.sign(accessPayload),
+    refresh_token: this.jwtService.sign(refreshPayload, {
+      expiresIn: '7d',
+    }),
+  };
+ }
+
+   async createIdentity(createIdentityDto: {
+    user: Types.ObjectId;
+    provider: string;
+    credentials: any;
+  }) {
+    const identity = new this.authIdentityModel(createIdentityDto);
+    return identity.save();
   }
 
+   
 
-  async sendPhoneOtp(phone: string): Promise<{ message: string }> {
-    const user = await this.userService.findByPhone(phone);
-    if (!user) {
-      throw new UnauthorizedException('Numéro non enregistré');
-    }
-
-    await this.otpService.generateAndSendOtp(phone);
-    return { message: 'OTP envoyé avec succès' };
+  
+ async signIn(
+  login: string,
+  password: string
+): Promise<{
+  access_token: string;
+  refresh_token: string;
+  role: string; //  utile côté frontend
+}> {
+  console.log(login)
+  if (!login || typeof login !== 'string') {
+    throw new UnauthorizedException('Login invalide');
   }
 
-  async verifyPhoneOtp(phone: string, otp: string): Promise<{ access_token: string }> {
-    const isOtpValid = await this.otpService.verifyOtp(phone, otp);
+  let authIdentity;
+
+  const isPhone = /^\+?\d+$/.test(login);
+
+  if (isPhone) {
+    authIdentity = await this.authIdentityModel.findOne({ phone: login });
+  } else {
+    const loginLower = login.toLowerCase();
+    authIdentity = await this.authIdentityModel.findOne({
+      $or: [{ username: loginLower }, { email: loginLower }],
+    });
+  }
+
+  if (!authIdentity) {
+    throw new UnauthorizedException('Identité non trouvée creer un compte.');
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, authIdentity.password);
+  if (!isPasswordValid) {
+    throw new UnauthorizedException('Mot de passe incorrect.');
+  }
+
+  const user = await this.userService.findOneById(authIdentity.user.toString());
+  if (!user) {
+    throw new UnauthorizedException('Utilisateur introuvable.');
+  }
+ 
+  //  Si l'utilisateur est un admin "forcé"
+  if (authIdentity.email === 'anatojoyce3@gmail.com') {
+    user.role = 'admin'; //  on force ici le rôle
+  }
+
+  const tokens = this.generateTokens(user, authIdentity);
+
+  return {
+    ...tokens,
+    role: user.role ?? 'user', //  retourne le rôle pour le frontend
+  };
+}
+
+
+  async verifyPhoneOtp(phone: string, otp: string): Promise<{ access_token: string; refresh_token: string }> {
+    const isOtpValid = await this.otpService.verify(phone, otp);
     if (!isOtpValid) {
       throw new UnauthorizedException('OTP invalide ou expiré');
     }
@@ -126,17 +212,54 @@ export class AuthService {
       throw new UnauthorizedException('Utilisateur non trouvé');
     }
 
-    // ➜ Chercher l'AuthIdentity associé au phone
     const authIdentity = await this.authIdentityModel.findOne({ phone });
     if (!authIdentity) {
-      throw new UnauthorizedException('Identité non trouvée pour ce téléphone');
+      throw new UnauthorizedException('Identité non trouvée');
     }
 
-    return this.generateToken(user, authIdentity);
+    return this.generateTokens(user, authIdentity);
   }
 
+  async refresh(refresh_token: string): Promise<{ access_token: string }> {
+    try {
+      const payload = this.jwtService.verify(refresh_token, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+
+      const user = await this.userService.findOneById(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('Utilisateur introuvable.');
+      }
+
+      const authIdentity = await this.authIdentityModel.findOne({ user: user._id });
+      if (!authIdentity) {
+        throw new UnauthorizedException('Identité non trouvée.');
+      }
+
+      const newAccessToken = this.jwtService.sign(
+        {
+          sub: user.id.toString(),
+          auth_identity: authIdentity.id.toString(),
+          phone: user.phone,
+          first_name: user.first_name,
+          roles: [user.role],
+        },
+        {
+          expiresIn: '1h',
+          secret: process.env.JWT_SECRET,
+        },
+      );
+
+      return { access_token: newAccessToken };
+    } catch (e) {
+      throw new UnauthorizedException('Refresh token invalide ou expiré.');
+    }
+  }
 
   async findOne(id: string): Promise<AuthIdentity | null> {
+    if (!isValidObjectId(id)) {
+      throw new BadRequestException('ID invalide');
+    }
     return this.authIdentityModel.findById(id).populate('providerIdentities').exec();
   }
 
@@ -156,6 +279,29 @@ export class AuthService {
     }
   }
 
+   async findOrCreateUser(profile: {
+    email: string;
+    firstName?: string;
+    lastName?: string;
+  }): Promise<User> {
+    // 1. Vérifie si l'utilisateur existe déjà
+    let user = await this.userModel.findOne({ email: profile.email }).exec();
+
+    // 2. Crée l'utilisateur s'il n'existe pas
+    if (!user) {
+      user = new this.userModel({
+        email: profile.email,
+        first_name: profile.firstName || 'Utilisateur',
+        last_name: profile.lastName || 'Google',
+        is_active: true,
+      });
+      await user.save();
+    }
+
+    return user;
+  }
+
+  
 
   // Supprimer des identités de provider
   async deleteProviderIdentities(ids: string[]) {

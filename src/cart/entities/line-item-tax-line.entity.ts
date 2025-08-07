@@ -6,11 +6,11 @@ export type LineItemTaxLineDocument = LineItemTaxLine & Document;
 
 @Schema({
   timestamps: true,
-  collection: 'cart_line_item_tax_line' // Matching original tableName
+  collection: 'cart_line_item_tax_line'
 })
 export class LineItemTaxLine {
   @Prop({ required: true, unique: true })
-  id: string; // Will be prefixed with "calitxl"
+  id: string;
 
   @Prop()
   description: string;
@@ -19,7 +19,10 @@ export class LineItemTaxLine {
   code: string;
 
   @Prop({ type: Number, required: true })
-  rate: number; // float() becomes Number
+  rate: number;
+
+  @Prop({ type: Number, required: true }) // ✅ Ajouté
+  amount: number;
 
   @Prop()
   provider_id: string;
@@ -38,36 +41,8 @@ export class LineItemTaxLine {
 
   @Prop()
   createAt: Date;
-  
- 
 }
+
 
 export const LineItemTaxLineSchema = SchemaFactory.createForClass(LineItemTaxLine);
 
-// Indexes
-LineItemTaxLineSchema.index(
-  { tax_rate_id: 1 },
-  {
-    name: 'IDX_line_item_tax_line_tax_rate_id',
-    partialFilterExpression: {
-      deleted_at: { $exists: false },
-      tax_rate_id: { $exists: true }
-    }
-  }
-);
-
-LineItemTaxLineSchema.index(
-  { item: 1 },
-  {
-    name: 'IDX_tax_line_item_id',
-    partialFilterExpression: { deleted_at: { $exists: false } }
-  }
-);
-
-// Middleware for ID generation
-LineItemTaxLineSchema.pre('save', function(next) {
-  if (!this.id) {
-    this.id = `calitxl_${Math.random().toString(36).substring(2, 11)}`;
-  }
-  next();
-});

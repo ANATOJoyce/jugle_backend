@@ -35,6 +35,24 @@ export class AuthIdentity {
 
   @Prop({ unique: true, sparse: true })
   phone: string;
+
+      @Prop()
+  otpCode?: string;
+
+  @Prop()
+  otpExpires?: Date;
+
+  @Prop({ default: false })
+  isVerified: boolean;
+
+   @Prop({ type: Object })
+  credentials: {
+    password?: string;
+    googleId?: string;  // Ajouté pour Google
+    accessToken?: string;
+    refreshToken?: string;
+  };
+
 }
 
 export const AuthIdentitySchema = SchemaFactory.createForClass(AuthIdentity);

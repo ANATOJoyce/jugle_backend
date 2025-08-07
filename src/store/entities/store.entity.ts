@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
-import { StoreCurrency } from './currency.entity';
+import mongoose, { Document, Schema as MongooseSchema } from 'mongoose';
+import { User } from 'src/user/entities/user.entity';
+import { StoreStatus } from '../dto/update-store-status.dto';
 
 @Schema({
   timestamps: true,
@@ -16,7 +17,7 @@ import { StoreCurrency } from './currency.entity';
   collection: 'stores',
 })
 export class Store extends Document {
-  @Prop({ required: true, default: 'Medusa Store', index: true })
+  @Prop({ required: true, index: true })
   name: string;
 
   @Prop({ type: String, default: null })
@@ -31,20 +32,20 @@ export class Store extends Document {
   @Prop({ type: Object, default: null })
   metadata?: Record<string, unknown>;
 
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  owner: User;
+
+
   @Prop({
     type: [{ type: MongooseSchema.Types.ObjectId, ref: 'StoreCurrency' }],
     default: [],
   })
   supported_currencies?: MongooseSchema.Types.ObjectId[];
+
+
+  @Prop({ type: String, enum: StoreStatus, default: StoreStatus.INACTIVE })
+  status: StoreStatus;
 }
 
+export type StoreDocument = Store & Document;
 export const StoreSchema = SchemaFactory.createForClass(Store);
-
-// Cascade delete for supported_currencies when store is deleted
-StoreSchema.pre('findOneAndDelete', async function (next) {
-  const doc = await this.model.findOne(this.getQuery());
-  if (doc) {
-    await doc.model('StoreCurrency').deleteMany({ store: doc._id });
-  }
-  next();
-});

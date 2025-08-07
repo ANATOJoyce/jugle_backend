@@ -13,9 +13,15 @@ import { ProductType, ProductTypeSchema } from './entities/product-type.entity';
 import { ProductController } from './product.controller';
 import { ProductService } from './product.service';
 import { ProductOption, ProductOptionSchema } from './entities/product-option.entity';
+import { CloudinaryModule } from './cloudinary.module';
+import { Store, StoreSchema } from 'src/store/entities/store.entity';
+import { StoreModule } from 'src/store/store.module';
+import { StoreGuard } from 'src/store/store.guard';
 
 @Module({
   imports: [
+    StoreModule, 
+    CloudinaryModule,
     MongooseModule.forFeature([
       { name: Product.name, schema: ProductSchema },
       { name: ProductCategory.name, schema: ProductCategorySchema },
@@ -25,9 +31,11 @@ import { ProductOption, ProductOptionSchema } from './entities/product-option.en
       { name: ProductVariant.name, schema: ProductVariantSchema },
       { name: ProductTag.name, schema: ProductTagSchema },
       { name: ProductType.name, schema: ProductTypeSchema },
+      { name: Store.name, schema: StoreSchema },
+      
     ]),
   ],
   controllers: [ProductController],
-  providers: [ProductService],
+  providers: [ProductService, StoreGuard],
 })
 export class ProductModule {}

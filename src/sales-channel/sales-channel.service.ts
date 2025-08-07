@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSalesChannelDto } from './dto/create-sales-channel.dto';
 import { UpdateSalesChannelDto } from './dto/update-sales-channel.dto';
-import { SalesChannel } from './entities/sales-channel.entity';
+import { SalesChannel, SalesChannelDocument } from './entities/sales-channel.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
@@ -9,26 +9,25 @@ import { InjectModel } from '@nestjs/mongoose';
 export class SalesChannelService {
 
     constructor(
-      @InjectModel(SalesChannel.name) private readonly salesModel: Model<SalesChannel>,
+      @InjectModel(SalesChannel.name) private readonly salesModel: Model<SalesChannelDocument>,
     ) {}
-  
-  create(createSalesChannelDto: CreateSalesChannelDto) {
-    return 'This action adds a new salesChannel';
+  async findAll() {
+    return this.salesModel.find().exec();
   }
 
-  findAll() {
-    return `This action returns all salesChannel`;
+  async create(dto: { name: string; description?: string }) {
+    return this.salesModel.create(dto);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} salesChannel`;
+  async update(id: string, dto: Partial<{ name: string; description: string }>) {
+    return this.salesModel.findByIdAndUpdate(id, dto, { new: true });
   }
 
-  update(id: number, updateSalesChannelDto: UpdateSalesChannelDto) {
-    return `This action updates a #${id} salesChannel`;
+  async delete(id: string) {
+    await this.salesModel.findByIdAndDelete(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} salesChannel`;
+  async toggleDisable(id: string, is_disabled: boolean) {
+    return this.salesModel.findByIdAndUpdate(id, { is_disabled }, { new: true });
   }
 }

@@ -25,13 +25,37 @@ import { RolesGuard } from './auth/roles.guards';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { PoliciesGuard } from './auth/policies.guard';
 import { CaslModule } from './casl/casl.module';
+import { CartModule } from './cart/cart.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { ScheduleModule } from '@nestjs/schedule';
+import { HasStoreGuard } from './auth/has-store.guard';
 
 @Module({
   imports: [
+ 
+  MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        transport: {
+          host: config.get<string>('MAIL_HOST'),
+          port: config.get<number>('MAIL_PORT'),
+          secure: false, // STARTTLS (587)
+          auth: {
+            user: config.get<string>('MAIL_USER'),
+            pass: config.get<string>('MAIL_PASS'),
+          },
+        },
+        defaults: {
+          from: config.get<string>('MAIL_FROM') || '"Jungle" <no-reply@jungle.com>',
+        },
+      }),
+    }),
+    ScheduleModule.forRoot(),
     ApiKeyModule,
-    AuthModule, 
+    AuthModule,  
     CaslModule,
-    //CartModule, 
+    CartModule, 
     CurrencyModule, 
     CustomerModule, 
     FulfillmentModule, 
@@ -58,21 +82,19 @@ import { CaslModule } from './casl/casl.module';
     }),
     inject: [ConfigService],
   }),
+
   ],
   controllers: [AppController],
   providers: [AppService,
 
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
+    
 
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
 
-      {
+    {
       provide: APP_GUARD,
       useClass: PoliciesGuard,
     },

@@ -15,5 +15,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 
   controllers: [StockLocationController],
   providers: [StockLocationService],
+  exports: [StockLocationService],
 })
 export class StockLocationModule {}

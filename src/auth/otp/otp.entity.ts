@@ -4,13 +4,19 @@ import { Document } from 'mongoose';
 @Schema({ timestamps: true })
 export class Otp {
   @Prop({ required: true })
-  phone: string;
+  email: string;
 
   @Prop({ required: true })
   code: string;
 
   @Prop({ required: true })
   expiresAt: Date;
+
+  @Prop({ default: false })
+  isUsed: boolean;
+
+  @Prop({ default: 0 })
+  attempts: number;
 }
 
 export type OtpDocument = Otp & Document; 

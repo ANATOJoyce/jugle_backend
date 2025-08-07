@@ -56,26 +56,3 @@ export class ShippingProfile {
 
 export const ShippingProfileSchema = SchemaFactory.createForClass(ShippingProfile);
 
-// Unique index with soft delete condition
-ShippingProfileSchema.index(
-  { name: 1 },
-  { 
-    unique: true,
-    partialFilterExpression: { deleted_at: { $eq: null } }
-  }
-);
-
-// Query middleware to exclude soft-deleted documents by default
-ShippingProfileSchema.pre(/^find/, function(this: any, next) {
-  if (this.getFilter().deleted_at == null) {
-    this.where({ deleted_at: null });
-  }
-  next();
-});
-
-// Virtual for populated shipping options
-ShippingProfileSchema.virtual('shipping_options_details', {
-  ref: 'ShippingOption',
-  localField: 'shipping_options',
-  foreignField: '_id'
-});

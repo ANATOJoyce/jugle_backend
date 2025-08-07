@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Body, ForbiddenException, Injectable, NotFoundException, Post } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Product } from './entities/product.entity';
+import { Product, ProductStatus } from './entities/product.entity';
 import { ProductCategory } from './entities/product-category.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -25,6 +25,8 @@ import { ProductTag } from './entities/product-tag.entity';
 import { ProductType } from './entities/product-type.entity';
 import { CreateProductTypeDto } from './dto/type/create-product-type.dto';
 import { UpdateProductTypeDto } from './dto/type/update-product-type.dto';
+import { CreateProductImageDto } from './dto/image/create-product-image.dto';
+import { Store } from 'src/store/entities/store.entity';
 
 @Injectable()
 export class ProductService {
@@ -38,16 +40,256 @@ export class ProductService {
     @InjectModel(ProductVariant.name) private readonly variantModel: Model<ProductVariant>,
     @InjectModel(ProductTag.name) private readonly tagModel: Model<ProductTag>,
     @InjectModel(ProductType.name) private readonly typeModel: Model<ProductType>,
+    @InjectModel(Store.name) private readonly storeModel: Model<Store>,
     // Ajoute ici les autres modèles
   ) {}
 
 
 
+
+  async findAllByUser(userId: string) {
+    return this.productModel.find({ where: { ownerId: userId } });
+  }
   // product.service.ts (bloc Product)
 
-  async createProduct(dto: CreateProductDto) {
-    return this.productModel.create(dto);
+ async findAllByStoreId(storeId: string) {
+  return this.productModel.find({
+    store: storeId,
+  }).populate('store');  // Assurez-vous que "store" est une référence à un autre modèle (par exemple, le modèle Store).
+ }
+
+
+ 
+
+
+ /**LES FONCTION POUR CHANGERLE STATUS DES PRODUITS ? DRAF, PROPO */
+
+ //Le vendeur va prposer un produit 
+
+ 
+
+  //l'admini publie le produit 
+
+  async publishProduct(productId: string) {
+  const product = await this.productModel.findById(productId);
+  if(!product){
+    throw new ForbiddenException();
   }
+  product.status = ProductStatus.PUBLISHED;
+  return product.save();
+ }
+
+ async create(dto: CreateProductDto, storeId: string): Promise<Product> {
+  const product = new this.productModel({
+    ...dto,
+    store: storeId,  // Assurez-vous que store est un ObjectId référent un document "Store"
+  });
+  return product.save();
+ }
+
+ 
+
+ //l'adimin le regete LE PRODUIT
+ async rejectProduct(productId: string) {
+  const product = await this.productModel.findById(productId);
+  if(!product){
+    throw new ForbiddenException();
+  }
+  product.status = ProductStatus.REJECTED;
+  return product.save();
+  }
+
+  //un produit 
+
+    async revertToDraft(productId: string, vendorId: string) {
+    const product = await this.productModel.findById(productId);
+    if (!product || product.store.toString() !== vendorId) {
+      throw new ForbiddenException();
+    }
+
+    // Seulement si produit est proposé ou rejeté
+    if (![ProductStatus.PROPOSED, ProductStatus.REJECTED].includes(product.status)) {
+      throw new BadRequestException('Le produit ne peut pas être remis en draft');
+    }
+
+    product.status = ProductStatus.DRAFT;
+    return product.save();
+  }
+
+
+
+ //**SEULELEMENT LES PRODUITS QUI ON UN STATUT PUBLISHED QUI SERONT VUS DE TOUS */
+  async getPublishedProducts(): Promise<Product[]> {
+  return this.productModel.find({ status: 'published' }).exec();
+  }
+ //**IMPORTANT  FILTRE ET PAGINATION DES PRODUIT PUNLIER*/
+
+ 
+
+
+
+  async find(filter?: any) {
+    return this.productModel.find(filter).exec();
+  }
+
+  async findByIdAndDelete(id: string) {
+    return this.productModel.findByIdAndDelete(id).exec();
+  }
+
+  // (si tu ne l'as pas déjà)
+ 
+  // product.service.ts//important
+
+  async recommendProductsByBudget(budget: number): Promise<Product[]> {
+    return this.productModel.find({
+      'variants.prices.amount': { $lte: budget * 100 }, // si en centimes
+    })
+    .limit(20)
+    .sort({ 'variants.prices.amount': 1 }) // du moins cher au plus cher
+    .populate('variants')
+    .exec();
+  }
+
+ 
+
+  async proposeProduct(productId: string, storeId: string) {
+  const product = await this.productModel.findById(productId);
+  if (!product || product.store.toString() !== storeId) {
+    throw new ForbiddenException();
+  }
+  product.status = ProductStatus.PROPOSED;
+  return product.save();
+}
+
+
+
+
+  async findAllAdmin(): Promise<Product[]> {
+    return this.productModel.find().populate('user').exec();
+  }
+
+  async findAll(): Promise<Product[]> {
+  return this.productModel.find().populate('category', 'title').exec();
+ }
+
+
+  async findOne(id: string): Promise<Product> {
+    const product = await this.productModel.findById(id).populate('vendor').exec();
+    if (!product) {
+      throw new NotFoundException(`Produit avec l'id ${id} introuvable`);
+    }
+    return product;
+  }
+
+ async changeProductStatus(productId: string, status: ProductStatus): Promise<Product> {
+  const product = await this.productModel.findById(productId);
+
+  if (!product) {
+    throw new NotFoundException(`Produit avec l'id ${productId} introuvable`);
+  }
+
+  // Vérification des transitions de statuts
+  if (
+    (status === ProductStatus.PUBLISHED && product.status !== ProductStatus.PROPOSED) ||
+    (status === ProductStatus.REJECTED && product.status !== ProductStatus.PROPOSED) ||
+    (status === ProductStatus.DRAFT && ![ProductStatus.PUBLISHED, ProductStatus.REJECTED].includes(product.status))
+  ) {
+    throw new BadRequestException(`Transition de statut non permise`);
+  }
+
+  product.status = status;
+  return product.save();
+}
+
+
+async createProduct(dto: CreateProductDto): Promise<Product> {
+  const product = new this.productModel(dto);
+  return product.save();
+}
+
+async softDeleteProduct(id: string): Promise<Product> {
+  const product = await this.productModel.findById(id);
+
+  if (!product) {
+    throw new NotFoundException(`Produit avec l'id ${id} introuvable`);
+  }
+
+  return product;
+}
+
+ async restoreEntity<T extends Document>(model: Model<T>, id: string): Promise<T | null> {
+  const entity = await model.findByIdAndUpdate(
+    id, 
+    { deleted_at: null }, 
+    { new: true }
+  );
+
+  if (!entity) {
+    throw new NotFoundException(`Entité avec l'id ${id} introuvable`);
+  }
+
+  return entity; // Pas besoin de casting, car TypeScript comprend le type maintenant
+}
+ 
+
+  async getProductsWithFilters(
+  page: number = 1,
+  limit: number = 10,
+  filters: Record<string, any> = {},
+  sort: string = '-createdAt'
+) {
+  const skip = (page - 1) * limit;
+  
+  // Filtrer dynamiquement
+  const query: any = { status: 'published' };
+
+  // Recherche par mot-clé
+  if (filters.search) {
+    query.$or = [
+      { title: { $regex: filters.search, $options: 'i' } },
+      { description: { $regex: filters.search, $options: 'i' } }
+    ];
+  }
+
+  // Filtre par catégorie
+  if (filters.category) query.category = filters.category;
+
+  // Filtre par prix
+  if (filters.minPrice !== undefined) {
+    query.price = { ...query.price, $gte: filters.minPrice };
+  }
+
+  if (filters.maxPrice !== undefined) {
+    query.price = { ...query.price, $lte: filters.maxPrice };
+  }
+
+  // Recherche des produits
+  const products = await this.productModel
+    .find(query)
+    .sort(sort)
+    .skip(skip)
+    .limit(limit)
+    .exec();
+
+  const total = await this.productModel.countDocuments(query);
+
+  return {
+    data: products,
+    meta: {
+      total,
+      page,
+      pageSize: limit,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
+}
+
+
+  async remove(id: string): Promise<void> {
+    await this.productModel.findByIdAndDelete(id);
+  }
+
+
 
   async updateProduct(id: string, dto: UpdateProductDto) {
     return this.productModel.findByIdAndUpdate(id, dto, { new: true });
@@ -61,9 +303,7 @@ export class ProductService {
     );
   }
 
-  async softDeleteProduct(id: string) {
-    return this.productModel.findByIdAndUpdate(id, { deleted_at: new Date() });
-  }
+
 
   async deleteProduct(id: string) {
     return this.productModel.findByIdAndDelete(id);
@@ -76,7 +316,9 @@ export class ProductService {
   async listProducts() {
     return this.productModel.find({ deleted_at: null });
   }
-
+/**IMPORATNT
+ * 
+ */
   async listAndCountProducts() {
     const docs = await this.productModel.find({ deleted_at: null });
     const count = await this.productModel.countDocuments({ deleted_at: null });
@@ -267,6 +509,24 @@ export class ProductService {
 //ProductVriant
 
 // product.service.ts (bloc complet ProductVariant)
+ async findAllWithRelations() {
+    return this.variantModel.find()
+      .populate('product')
+      .populate('prices')
+      .exec();
+  }
+
+  async createVariant(dto: any) {
+    const variant = new this.variantModel({
+      ...dto,
+      prices: dto.prices.map(p => ({
+        amount: Math.round(p.amount * 100), // Convertir en centimes
+        currency: p.currency,
+        region: p.region || null
+      }))
+    });
+    return variant.save();
+  }
 
   async createProductVariant(dto: CreateProductVariantDto) {
     return this.variantModel.create(dto);
@@ -310,7 +570,18 @@ export class ProductService {
     return this.variantModel.findById(id);
   }
 
+
+    async findByIdAndUpdate(id: string, dto: UpdateProductDto, options = {}): Promise<Product> {
+      const updatedProduct = await this.productModel.findByIdAndUpdate(id, dto, options).exec();
+      if (!updatedProduct) {
+        throw new NotFoundException(`Product with id ${id} not found`);
+      }
+      return updatedProduct;
+    }
   //product tags
+
+
+  
 
   // product.service.ts (bloc ProductTag)
 
@@ -402,6 +673,15 @@ export class ProductService {
   }
 
 
+//tag
+
+// product.service.ts (bloc ProductType)
+
+  async createProductImage(dto: CreateProductImageDto) {
+    return this.typeModel.create(dto);
+  }
+
+  
 
 
 }

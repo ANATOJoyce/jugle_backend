@@ -32,26 +32,3 @@ export class CustomerGroup {
 
 export const CustomerGroupSchema = SchemaFactory.createForClass(CustomerGroup);
 
-// Middleware pour générer l'ID avec préfixe
-CustomerGroupSchema.pre('save', function(next) {
-  if (!this.id) {
-    this.id = `cusgroup_${Math.random().toString(36).substring(2, 11)}`;
-  }
-  next();
-});
-
-// Middleware pour détacher les customers (via table pivot)
-CustomerGroupSchema.pre('deleteOne', { document: true, query: false }, async function(next) {
-  const group = this as CustomerGroupDocument;
-  await this.model('CustomerGroupCustomer').deleteMany({ group: group._id });
-  next();
-});
-
-// Index unique sur le nom (avec soft delete)
-CustomerGroupSchema.index(
-  { name: 1 },
-  {
-    unique: true,
-    partialFilterExpression: { deleted_at: { $exists: false } }
-  }
-);

@@ -42,10 +42,3 @@ export class Country  {
 }
 
 export const CountrySchema = SchemaFactory.createForClass(Country);
-
-// Create compound index for region_id and iso_2
-CountrySchema.index({ region: 1, iso_2: 1 }, { unique: true });
-
-// Add text indexes for searchable fields
-CountrySchema.index({ name: 'text' });
-CountrySchema.index({ iso_2: 'text' });
