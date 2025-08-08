@@ -1,5 +1,6 @@
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
   "name": "jungle",
   "version": "0.0.1",
   "description": "",
@@ -100,6 +101,8 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
 =======
+=======
+>>>>>>> 4fae5d4497787c4c65d051ba7b9756fd549fd180
   "name": "medusa-admin",
   "private": true,
   "description": "A proprietary Admin system to manage Medusa Stores",
@@ -221,6 +224,9 @@
   },
   "bugs": {
     "url": "https://github.com/medusajs/admin/issues"
+<<<<<<< HEAD
+>>>>>>> 4fae5d4497787c4c65d051ba7b9756fd549fd180
+=======
 >>>>>>> 4fae5d4497787c4c65d051ba7b9756fd549fd180
   }
 }

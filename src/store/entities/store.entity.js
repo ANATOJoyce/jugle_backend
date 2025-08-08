@@ -1,0 +1,150 @@
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __esDecorate = (this && this.__esDecorate) || function (ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
+    function accept(f) { if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected"); return f; }
+    var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
+    var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
+    var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
+    var _, done = false;
+    for (var i = decorators.length - 1; i >= 0; i--) {
+        var context = {};
+        for (var p in contextIn) context[p] = p === "access" ? {} : contextIn[p];
+        for (var p in contextIn.access) context.access[p] = contextIn.access[p];
+        context.addInitializer = function (f) { if (done) throw new TypeError("Cannot add initializers after decoration has completed"); extraInitializers.push(accept(f || null)); };
+        var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context);
+        if (kind === "accessor") {
+            if (result === void 0) continue;
+            if (result === null || typeof result !== "object") throw new TypeError("Object expected");
+            if (_ = accept(result.get)) descriptor.get = _;
+            if (_ = accept(result.set)) descriptor.set = _;
+            if (_ = accept(result.init)) initializers.unshift(_);
+        }
+        else if (_ = accept(result)) {
+            if (kind === "field") initializers.unshift(_);
+            else descriptor[key] = _;
+        }
+    }
+    if (target) Object.defineProperty(target, contextIn.name, descriptor);
+    done = true;
+};
+var __runInitializers = (this && this.__runInitializers) || function (thisArg, initializers, value) {
+    var useValue = arguments.length > 2;
+    for (var i = 0; i < initializers.length; i++) {
+        value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
+    }
+    return useValue ? value : void 0;
+};
+var __setFunctionName = (this && this.__setFunctionName) || function (f, name, prefix) {
+    if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
+    return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StoreSchema = exports.Store = void 0;
+var mongoose_1 = require("@nestjs/mongoose");
+var mongoose_2 = require("mongoose");
+var update_store_status_dto_1 = require("../dto/update-store-status.dto");
+var Store = function () {
+    var _classDecorators = [(0, mongoose_1.Schema)({
+            timestamps: true,
+            toJSON: {
+                virtuals: true,
+                transform: function (_, ret) {
+                    ret.id = ret._id;
+                    delete ret._id;
+                    delete ret.__v;
+                    return ret;
+                },
+            },
+            collection: 'stores',
+        })];
+    var _classDescriptor;
+    var _classExtraInitializers = [];
+    var _classThis;
+    var _classSuper = mongoose_2.Document;
+    var _name_decorators;
+    var _name_initializers = [];
+    var _name_extraInitializers = [];
+    var _default_sales_channel_id_decorators;
+    var _default_sales_channel_id_initializers = [];
+    var _default_sales_channel_id_extraInitializers = [];
+    var _default_region_id_decorators;
+    var _default_region_id_initializers = [];
+    var _default_region_id_extraInitializers = [];
+    var _default_location_id_decorators;
+    var _default_location_id_initializers = [];
+    var _default_location_id_extraInitializers = [];
+    var _metadata_decorators;
+    var _metadata_initializers = [];
+    var _metadata_extraInitializers = [];
+    var _owner_decorators;
+    var _owner_initializers = [];
+    var _owner_extraInitializers = [];
+    var _supported_currencies_decorators;
+    var _supported_currencies_initializers = [];
+    var _supported_currencies_extraInitializers = [];
+    var _status_decorators;
+    var _status_initializers = [];
+    var _status_extraInitializers = [];
+    var Store = _classThis = /** @class */ (function (_super) {
+        __extends(Store_1, _super);
+        function Store_1() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.name = __runInitializers(_this, _name_initializers, void 0);
+            _this.default_sales_channel_id = (__runInitializers(_this, _name_extraInitializers), __runInitializers(_this, _default_sales_channel_id_initializers, void 0));
+            _this.default_region_id = (__runInitializers(_this, _default_sales_channel_id_extraInitializers), __runInitializers(_this, _default_region_id_initializers, void 0));
+            _this.default_location_id = (__runInitializers(_this, _default_region_id_extraInitializers), __runInitializers(_this, _default_location_id_initializers, void 0));
+            _this.metadata = (__runInitializers(_this, _default_location_id_extraInitializers), __runInitializers(_this, _metadata_initializers, void 0));
+            _this.owner = (__runInitializers(_this, _metadata_extraInitializers), __runInitializers(_this, _owner_initializers, void 0));
+            _this.supported_currencies = (__runInitializers(_this, _owner_extraInitializers), __runInitializers(_this, _supported_currencies_initializers, void 0));
+            _this.status = (__runInitializers(_this, _supported_currencies_extraInitializers), __runInitializers(_this, _status_initializers, void 0));
+            __runInitializers(_this, _status_extraInitializers);
+            return _this;
+        }
+        return Store_1;
+    }(_classSuper));
+    __setFunctionName(_classThis, "Store");
+    (function () {
+        var _a;
+        var _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create((_a = _classSuper[Symbol.metadata]) !== null && _a !== void 0 ? _a : null) : void 0;
+        _name_decorators = [(0, mongoose_1.Prop)({ required: true, index: true })];
+        _default_sales_channel_id_decorators = [(0, mongoose_1.Prop)({ type: String, default: null })];
+        _default_region_id_decorators = [(0, mongoose_1.Prop)({ type: String, default: null })];
+        _default_location_id_decorators = [(0, mongoose_1.Prop)({ type: String, default: null })];
+        _metadata_decorators = [(0, mongoose_1.Prop)({ type: Object, default: null })];
+        _owner_decorators = [(0, mongoose_1.Prop)({ type: mongoose_2.default.Schema.Types.ObjectId, ref: 'User' })];
+        _supported_currencies_decorators = [(0, mongoose_1.Prop)({
+                type: [{ type: mongoose_2.Schema.Types.ObjectId, ref: 'StoreCurrency' }],
+                default: [],
+            })];
+        _status_decorators = [(0, mongoose_1.Prop)({ type: String, enum: update_store_status_dto_1.StoreStatus, default: update_store_status_dto_1.StoreStatus.INACTIVE })];
+        __esDecorate(null, null, _name_decorators, { kind: "field", name: "name", static: false, private: false, access: { has: function (obj) { return "name" in obj; }, get: function (obj) { return obj.name; }, set: function (obj, value) { obj.name = value; } }, metadata: _metadata }, _name_initializers, _name_extraInitializers);
+        __esDecorate(null, null, _default_sales_channel_id_decorators, { kind: "field", name: "default_sales_channel_id", static: false, private: false, access: { has: function (obj) { return "default_sales_channel_id" in obj; }, get: function (obj) { return obj.default_sales_channel_id; }, set: function (obj, value) { obj.default_sales_channel_id = value; } }, metadata: _metadata }, _default_sales_channel_id_initializers, _default_sales_channel_id_extraInitializers);
+        __esDecorate(null, null, _default_region_id_decorators, { kind: "field", name: "default_region_id", static: false, private: false, access: { has: function (obj) { return "default_region_id" in obj; }, get: function (obj) { return obj.default_region_id; }, set: function (obj, value) { obj.default_region_id = value; } }, metadata: _metadata }, _default_region_id_initializers, _default_region_id_extraInitializers);
+        __esDecorate(null, null, _default_location_id_decorators, { kind: "field", name: "default_location_id", static: false, private: false, access: { has: function (obj) { return "default_location_id" in obj; }, get: function (obj) { return obj.default_location_id; }, set: function (obj, value) { obj.default_location_id = value; } }, metadata: _metadata }, _default_location_id_initializers, _default_location_id_extraInitializers);
+        __esDecorate(null, null, _metadata_decorators, { kind: "field", name: "metadata", static: false, private: false, access: { has: function (obj) { return "metadata" in obj; }, get: function (obj) { return obj.metadata; }, set: function (obj, value) { obj.metadata = value; } }, metadata: _metadata }, _metadata_initializers, _metadata_extraInitializers);
+        __esDecorate(null, null, _owner_decorators, { kind: "field", name: "owner", static: false, private: false, access: { has: function (obj) { return "owner" in obj; }, get: function (obj) { return obj.owner; }, set: function (obj, value) { obj.owner = value; } }, metadata: _metadata }, _owner_initializers, _owner_extraInitializers);
+        __esDecorate(null, null, _supported_currencies_decorators, { kind: "field", name: "supported_currencies", static: false, private: false, access: { has: function (obj) { return "supported_currencies" in obj; }, get: function (obj) { return obj.supported_currencies; }, set: function (obj, value) { obj.supported_currencies = value; } }, metadata: _metadata }, _supported_currencies_initializers, _supported_currencies_extraInitializers);
+        __esDecorate(null, null, _status_decorators, { kind: "field", name: "status", static: false, private: false, access: { has: function (obj) { return "status" in obj; }, get: function (obj) { return obj.status; }, set: function (obj, value) { obj.status = value; } }, metadata: _metadata }, _status_initializers, _status_extraInitializers);
+        __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
+        Store = _classThis = _classDescriptor.value;
+        if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
+        __runInitializers(_classThis, _classExtraInitializers);
+    })();
+    return Store = _classThis;
+}();
+exports.Store = Store;
+exports.StoreSchema = mongoose_1.SchemaFactory.createForClass(Store);

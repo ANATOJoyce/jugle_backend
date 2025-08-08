@@ -1,9 +1,12 @@
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
   "singleQuote": true,
   "trailingComma": "all"
 }
 =======
+=======
+>>>>>>> 4fae5d4497787c4c65d051ba7b9756fd549fd180
   "arrowParens": "always",
   "semi": false,
   "endOfLine": "auto",
@@ -11,4 +14,7 @@
   "tabWidth": 2,
   "trailingComma": "es5"
 }
+<<<<<<< HEAD
+>>>>>>> 4fae5d4497787c4c65d051ba7b9756fd549fd180
+=======
 >>>>>>> 4fae5d4497787c4c65d051ba7b9756fd549fd180

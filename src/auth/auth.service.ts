@@ -135,7 +135,7 @@ export class AuthService {
   };
  }
 
-   async createIdentity(createIdentityDto: {
+  async createIdentity(createIdentityDto: {
     user: Types.ObjectId;
     provider: string;
     credentials: any;

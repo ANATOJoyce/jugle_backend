@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -23,6 +24,8 @@
   }
 }
 =======
+=======
+>>>>>>> 4fae5d4497787c4c65d051ba7b9756fd549fd180
     "target": "esnext",
     "jsx": "react",
     "lib": ["dom", "esnext"],
@@ -35,5 +38,9 @@
     "noImplicitAny": false
   },
   "exclude": ["node_modules", "public", ".cache"]
+<<<<<<< HEAD
+}
+>>>>>>> 4fae5d4497787c4c65d051ba7b9756fd549fd180
+=======
 }
 >>>>>>> 4fae5d4497787c4c65d051ba7b9756fd549fd180

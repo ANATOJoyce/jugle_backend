@@ -83,15 +83,7 @@ async findMe(@CurrentUser() id: string) {
 
 // user.controller.ts
 
-  @UseGuards(AuthGuard('jwt'), RolesGuard, HasStoreGuard)
-  @Roles(Role.VENDOR)
-  @Get('dashboard')
-  getVendorDashboard(@Req() req: AuthRequest) {
-    return {
-      message: 'Bienvenue sur votre tableau de bord vendeur !',
-    };
-  }
-
+ 
 
   
 }
