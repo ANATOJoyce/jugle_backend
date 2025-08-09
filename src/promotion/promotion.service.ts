@@ -50,7 +50,7 @@ export class PromotionService {
     /**IMPORTANT
      * EST CE QUE LA PROMTION EST ELIGIBLE ? , changement automatiser du statu stout les 1h
      */
-isPromotionEligible(promo: Promotion, cart: Cart, user: User): boolean {
+  isPromotionEligible(promo: Promotion, cart: Cart, user: User): boolean {
   const now = new Date();
 
   if (promo.status !== 'active') return false;
@@ -61,13 +61,14 @@ isPromotionEligible(promo: Promotion, cart: Cart, user: User): boolean {
 
   // Produits ciblés
   if (promo.products?.length > 0) {
-    const eligible = cart.items.some(item => {
-      const productId = typeof item.product === 'object' && '_id' in item.product
+      const eligible = cart.items.some(item => {
+      const productId = typeof item.product === 'object' && item.product !== null && '_id' in item.product
         ? item.product._id
         : item.product;
 
-      return promo.products.map(p => p.toString()).includes(productId.toString());
+      return promo.products.map(p => p.toString()).includes(String(productId));
     });
+
 
     if (!eligible) return false;
   }
@@ -101,6 +102,8 @@ isPromotionEligible(promo: Promotion, cart: Cart, user: User): boolean {
  * @param cart 
  * @returns 
  */
+
+/*
   calculateDiscount(promo: Promotion, cart: Cart): number {
   let totalDiscount = 0;
 
@@ -130,7 +133,7 @@ isPromotionEligible(promo: Promotion, cart: Cart, user: User): boolean {
 
   return Math.min(totalDiscount, cart.total);
  }
-
+*/
 
  private determineStatus(promotion: Promotion): PromotionStatus {
   const now = new Date();

@@ -25,7 +25,6 @@ import { ProductTag } from './entities/product-tag.entity';
 import { ProductType } from './entities/product-type.entity';
 import { CreateProductTypeDto } from './dto/type/create-product-type.dto';
 import { UpdateProductTypeDto } from './dto/type/update-product-type.dto';
-import { CreateProductImageDto } from './dto/image/create-product-image.dto';
 import { Store } from 'src/store/entities/store.entity';
 
 @Injectable()
@@ -677,9 +676,6 @@ async softDeleteProduct(id: string): Promise<Product> {
 
 // product.service.ts (bloc ProductType)
 
-  async createProductImage(dto: CreateProductImageDto) {
-    return this.typeModel.create(dto);
-  }
 
   
 

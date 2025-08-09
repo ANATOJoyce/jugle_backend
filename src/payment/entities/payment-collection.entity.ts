@@ -3,6 +3,8 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Payment } from './payment.entity';
 import { PaymentProvider } from './payment-provider.entity';
 import { PaymentSession } from './payment-session.entity';
+import { Types } from 'mongoose';
+
 
 export enum PaymentCollectionStatus {
   NOT_PAID = 'not_paid',
@@ -63,11 +65,8 @@ export class PaymentCollection {
   payment_sessions: PaymentSession[];
 
   // One-to-Many with Payment
-  @Prop({
-    type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Payment' }],
-    default: [],
-  })
-  payments: Payment[];
+@Prop({ type: [Types.ObjectId], ref: 'Payment' })
+payments: Types.ObjectId[];
 }
 
 export const PaymentCollectionSchema =

@@ -13,21 +13,21 @@ export type OrderExchangeDocument = OrderExchange & Document;
   collection: 'order_exchanges',
   toJSON: {
     virtuals: true,
-    transform: (doc, ret) => {
-      ret.id = `oexc_${doc._id.toString()}`;
-      delete ret._id;
-      delete ret.__v;
-      return ret;
-    },
+        transform: (_, ret: { _id: any; __v?: number; [key: string]: any }) => {
+          ret.id = ret._id.toString();
+          delete ret._id;
+          delete ret.__v;
+          return ret;
+        }
   },
   toObject: {
     virtuals: true,
-    transform: (doc, ret) => {
-      ret.id = `oexc_${doc._id.toString()}`;
-      delete ret._id;
-      delete ret.__v;
-      return ret;
-    },
+        transform: (_, ret: { _id: any; __v?: number; [key: string]: any }) => {
+          ret.id = ret._id.toString();
+          delete ret._id;
+          delete ret.__v;
+          return ret;
+        }
   },
 })
 export class OrderExchange {

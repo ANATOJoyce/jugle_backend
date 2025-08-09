@@ -8,7 +8,6 @@ import { User } from "src/user/entities/user.entity";
 import { CartDTO } from "./dto/cart.dto";
 import { plainToInstance } from "class-transformer";
 import { UpdateCartDto } from "./dto/update-cart.dto";
-import { CreateLineItemAdjustmentDTO } from "./dto/create-line-item-adjustement.dto";
 import { CreateLineItemTaxLineDTO } from "./dto/create-line-item-tax-line.dto";
 import { LineItemTaxLine } from "./entities/line-item-tax-line.entity";
 import { CreateLineItemForCartDTO } from "./dto/create-line-item-for-cart.dto";
@@ -49,11 +48,7 @@ export class CartController {
     return this.cartService.findAll();
   }
 
-  @Patch(':id')
-  @Roles(Role.ADMIN,Role.VENDOR)
-  async update(@Param('id') id: string, @Body() updateCartDto: UpdateCartDto) {
-    return this.cartService.update(id, updateCartDto);
-  }
+ 
 
   @Delete(':id')
   @Roles(Role.ADMIN)

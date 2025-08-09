@@ -1,8 +1,7 @@
 import { IsString, IsOptional, IsEmail, IsObject } from 'class-validator';
 
 export class CreateCartDto {
-  @IsString()
-  currency_code: string;
+
 
   @IsOptional()
   @IsString()

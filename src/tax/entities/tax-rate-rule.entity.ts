@@ -7,12 +7,13 @@ import { TaxRate } from './tax-rate.entity';
   collection: 'tax_rate_rules',
   toJSON: {
     virtuals: true,
-    transform: (_, ret) => {
-      ret.id = ret._id;
-      delete ret._id;
-      delete ret.__v;
-      return ret;
-    },
+      transform: (_, ret: { _id: any; __v?: number; [key: string]: any }) => {
+        ret.id = ret._id.toString();
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      }
+
   },
 })
 export class TaxRateRule extends Document {

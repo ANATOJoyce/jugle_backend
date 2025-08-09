@@ -8,9 +8,6 @@ export type InventoryLevelDocument = InventoryLevel & Document;
   toJSON: {
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id;
-      delete ret._id;
-      delete ret.__v;
       return ret;
     }
   }
@@ -70,9 +67,6 @@ export class InventoryLevel {
     type: Number,
     default: 0,
     virtual: true,
-    get: function() {
-      return this.stocked_quantity - this.reserved_quantity;
-    }
   })
   available_quantity: number;
 

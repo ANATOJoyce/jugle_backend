@@ -17,12 +17,12 @@ export type OrderChangeDocument = OrderChange & Document;
   collection: 'order_changes',
   toJSON: {
     virtuals: true,
-    transform: (doc, ret) => {
-      ret.id = `ordch_${doc._id.toString()}`;
-      delete ret._id;
-      delete ret.__v;
-      return ret;
-    },
+      transform: (_, ret: { _id: any; __v?: number; [key: string]: any }) => {
+        ret.id = ret._id.toString();
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      }
   },
 })
 export class OrderChange {

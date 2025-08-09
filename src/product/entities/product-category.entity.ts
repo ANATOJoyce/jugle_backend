@@ -23,19 +23,19 @@ export class ProductCategory extends Document {
   is_internal: boolean;
 
   @Prop({ default: 0 })
-  rank: number;
+  rank!: number;
 
   @Prop({ type: Object })
   metadata: Record<string, any>;
 
   @Prop({ type: Types.ObjectId, ref: 'ProductCategory' })
-  parent_category: ProductCategory;
+  parent_category!: ProductCategory;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'ProductCategory' }] })
-  category_children: ProductCategory[];
+  category_children!: ProductCategory[];
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Product' }] })
-  products: Product[];
+  products!: Product[];
 }
 
 export const ProductCategorySchema = SchemaFactory.createForClass(ProductCategory);

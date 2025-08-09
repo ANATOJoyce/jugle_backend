@@ -6,7 +6,6 @@ import { Role } from 'src/auth/role.enum';
 import { Roles } from 'src/auth/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/auth/roles.guards';
-import { AuthRequest } from 'src/types/auth-request';
 
 @Controller('promotions')
 export class PromotionController {

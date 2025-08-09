@@ -27,8 +27,8 @@ import { PoliciesGuard } from './auth/policies.guard';
 import { CaslModule } from './casl/casl.module';
 import { CartModule } from './cart/cart.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { ScheduleModule } from '@nestjs/schedule';
 import { HasStoreGuard } from './auth/has-store.guard';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [

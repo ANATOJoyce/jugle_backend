@@ -8,12 +8,13 @@ export type ApiKeyDocument = ApiKey & Document;
   collection: 'api_keys',
   toJSON: {
     virtuals: true,
-    transform: (_, ret) => {
+    transform: (_, ret: { _id: any; __v?: number; [key: string]: any }) => {
       ret.id = ret._id.toString();
       delete ret._id;
       delete ret.__v;
       return ret;
-    },
+    }
+
   },
 })
 export class ApiKey {

@@ -254,24 +254,7 @@ async calculateCartTotals(cartId: string): Promise<CartDocument> {
   }
 
 
-  async update(id: string, updateCartDto: UpdateCartDto): Promise<Cart> {
-    if (!isValidObjectId(id)) {
-      throw new NotFoundException(`Invalid ID`);
-    }
 
-    const cart = await this.cartModel.findById(id);
-    if (!cart) {
-      throw new NotFoundException(`Panier avec l'ID ${id} non trouvé.`);
-    }
-
-    try {
-      Object.assign(cart, updateCartDto);
-      return await cart.save();
-    } catch (error) {
-      this.logger.error(`Erreur lors de la mise à jour du panier ${id}`, error.stack);
-      throw new InternalServerErrorException('Une erreur est survenue lors de la mise à jour du panier.');
-    }
-  }
 
   async createCarts(
     data: CreateCartDto | CreateCartDto[],

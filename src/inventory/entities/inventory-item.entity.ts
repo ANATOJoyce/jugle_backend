@@ -9,8 +9,8 @@ export type InventoryItemDocument = InventoryItem & Document;
   timestamps: true,
   toJSON: {
     virtuals: true,
-    transform: function(doc, ret) {
-      ret.id = ret._id;
+    transform: (_, ret: { _id: any; __v?: number; [key: string]: any }) => {
+      ret.id = ret._id.toString();
       delete ret._id;
       delete ret.__v;
       return ret;

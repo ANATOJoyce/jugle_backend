@@ -7,12 +7,12 @@ import { OrderLineItem } from '../line-item.entity';
   collection: 'order_line_item_adjustments',
   autoIndex: true,
   toJSON: {
-    transform: (doc, ret) => {
-      ret.id = `ordliadj_${doc._id.toString()}`;
+    transform: (_, ret: { _id: any; __v?: number; [key: string]: any }) => {
+      ret.id = ret._id.toString();
       delete ret._id;
       delete ret.__v;
       return ret;
-    },
+    }
   }
 })
 export class OrderLineItemAdjustment extends Document {

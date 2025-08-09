@@ -9,8 +9,7 @@ export type AddressDocument = Address & Document;
   collection: 'cart_address'
 })
 export class Address {
-  @Prop({ required: true, unique: true })
-  id: string;
+
 
   @Prop({ type: Types.ObjectId, ref: 'Customer', required: false })
   customer?: Types.ObjectId | Customer;

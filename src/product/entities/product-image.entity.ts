@@ -8,16 +8,16 @@ import { Product } from './product.entity';
 })
 export class ProductImage extends Document {
   @Prop({ required: true })
-  url: string;
+  url!: string;
 
   @Prop({ type: Object })
-  metadata: Record<string, any>;
+  metadata!: Record<string, any>;
 
   @Prop({ default: 0 })
-  rank: number;
+  rank!: number;
 
   @Prop({ type: Types.ObjectId, ref: 'Product', required: true })
-  product: Product;
+  product!: Product;
 }
 
 export const ProductImageSchema = SchemaFactory.createForClass(ProductImage);

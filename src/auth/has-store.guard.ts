@@ -10,7 +10,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { UserService } from 'src/user/user.service';
 import { Role } from 'src/auth/role.enum';
-import { AuthRequest } from 'src/types/auth-request';
+import { AuthRequest } from 'src/auth/auth-request';
 
 @Injectable()
 export class HasStoreGuard implements CanActivate {

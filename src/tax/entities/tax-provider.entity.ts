@@ -6,12 +6,12 @@ import { TaxRegion } from './tax-region.entity';
   timestamps: true,
   toJSON: {
     virtuals: true,
-    transform: (_, ret) => {
-      ret.id = ret._id;
+    transform: (_, ret: { _id: any; __v?: number; [key: string]: any }) => {
+      ret.id = ret._id.toString();
       delete ret._id;
       delete ret.__v;
       return ret;
-    },
+    }
   },
   collection: 'tax_providers',
 })

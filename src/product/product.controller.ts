@@ -19,7 +19,6 @@ import { CurrentStore } from 'src/store/current-store.decorator';
 import { Store } from 'src/store/entities/store.entity';
 import { User } from 'src/user/user.decorator';
 import { OwnerGuard } from 'src/auth/owner.guard';
-import { AuthRequest } from 'src/types/auth-request';
 import { AuthGuard } from '@nestjs/passport';
 import { StoreGuard } from 'src/store/store.guard';
 
@@ -39,15 +38,7 @@ export class ProductController {
 
 
 
-  @Post()
- // @UseGuards(JwtAuthGuard) 
-  async create(@Req() req: AuthRequest, @Body() dto: CreateProductDto) {
-    const storeId = req.user?.store?._id;
-    if (!storeId) {
-      throw new BadRequestException('Aucune boutique associée à cet utilisateur');
-    }
-    return this.productService.create(dto, storeId);
-  }
+ 
 
 
 
@@ -73,7 +64,7 @@ export class ProductController {
   @UseGuards(AuthGuard('jwt'), StoreGuard)
   @Get('store/me')
   async getVendorProducts(@CurrentStore() store: Store) {
-    return this.productService.findAllByStoreId(store.id);
+    return this.productService.findAllByStoreId(store.name);
   }
  
   // ==============================================
@@ -109,13 +100,7 @@ export class ProductController {
   // SECTION 3: PRODUCT IMAGE MANAGEMENT
   // ==============================================
 
-  @Post('upload-image')
-  @UseInterceptors(FileInterceptor('file'))
-  @Roles(Role.ADMIN, Role.VENDOR)
-  async uploadImage(@UploadedFile() file: Express.Multer.File) {
-    const imageUrl = await this.cloudinaryService.uploadImage(file);
-    return { url: imageUrl };
-  }
+ 
 
   // ==============================================
   // SECTION 4: PRODUCT VARIANTS

@@ -7,13 +7,13 @@ import { ProductOptionValue } from './product-option-value.entity';
 
 export class ProductOption extends Document {
   @Prop({ required: true, index: true }) // searchable()
-  title: string;
+  title!: string;
 
   @Prop({ type: Object })
-  metadata: Record<string, any>; // nullable()
+  metadata!: Record<string, any>; // nullable()
 
   @Prop({ type: Types.ObjectId, ref: 'Product', required: true })
-  product: Product; // belongsTo(Product)
+  product!: Product; // belongsTo(Product)
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'ProductOptionValue' }] })
   values: ProductOptionValue[]; // hasMany(ProductOptionValue)

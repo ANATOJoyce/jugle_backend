@@ -9,13 +9,13 @@ export class ProductType extends Document {
     unique: true,
     index: true
   })
-  value: string;
+  value!: string;
 
   @Prop({ type: Object })
   metadata: Record<string, any>;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Product' }] })
-  products: Product[];
+  products!: Product[];
 }
 
 export const ProductTypeSchema = SchemaFactory.createForClass(ProductType);

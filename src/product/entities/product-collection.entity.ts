@@ -5,16 +5,16 @@ import { Product } from './product.entity';
 @Schema({ timestamps: true })
 export class ProductCollection extends Document {
   @Prop({ required: true, index: true })
-  title: string;
+  title!: string;
 
   @Prop({ required: true, index: true, unique: true })
-  handle: string;
+  handle!: string;
 
   @Prop({ type: Object })
-  metadata: Record<string, any>;
+  metadata!: Record<string, any>;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Product' }] })
-  products: Product[];
+  products!: Product[];
 }
 
 export const ProductCollectionSchema = SchemaFactory.createForClass(ProductCollection);

@@ -12,13 +12,13 @@ export class ProductTag extends Document {
     index: true,
     unique: true
   })
-  value: string; // searchable and unique
+  value!: string; // searchable and unique
 
   @Prop({ type: Object })
-  metadata: Record<string, any>; // nullable
+  metadata!: Record<string, any>; // nullable
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Product' }] })
-  products: Product[]; // manyToMany relationship
+  products!: Product[]; // manyToMany relationship
 }
 
 export const ProductTagSchema = SchemaFactory.createForClass(ProductTag);

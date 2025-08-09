@@ -8,12 +8,12 @@ import { Payment } from 'src/payment/entities/payment.entity';
   collection: 'orders',
   toJSON: {
     virtuals: true,
-    transform: (_, ret) => {
-      ret.id = ret._id.toString();
-      delete ret._id;
-      delete ret.__v;
-      return ret;
-    },
+        transform: (_, ret: { _id: any; __v?: number; [key: string]: any }) => {
+          ret.id = ret._id.toString();
+          delete ret._id;
+          delete ret.__v;
+          return ret;
+        }
   },
 })
 export class Order extends Document {
@@ -60,8 +60,8 @@ export class Order extends Document {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'OrderShippingMethod' }], default: [] })
   shipping_methods?: Types.ObjectId[]; // ou OrderShippingMethod[]
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Payment' }], default: [] })
-  payments?:  Payment[];
+  @Prop({ type: [Types.ObjectId], ref: 'Payment' })
+  payments: Types.ObjectId[];
 
   @Prop()
   deleted_at?: Date;

@@ -8,12 +8,12 @@ import { TaxRate } from './tax-rate.entity';
   collection: 'tax_regions',
   toJSON: {
     virtuals: true,
-    transform: (_, ret) => {
-      ret.id = ret._id;
+    transform: (_, ret: { _id: any; __v?: number; [key: string]: any }) => {
+      ret.id = ret._id.toString();
       delete ret._id;
       delete ret.__v;
       return ret;
-    },
+    }
   },
 })
 export class TaxRegion extends Document {

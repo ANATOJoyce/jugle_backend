@@ -5,7 +5,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import mongoose from 'mongoose';
 import { Role } from '../auth/role.enum';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { AuthRequest } from 'src/types/auth-request';
 import { Roles } from 'src/auth/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/auth/roles.guards';

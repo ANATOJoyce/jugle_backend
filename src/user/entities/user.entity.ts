@@ -8,13 +8,13 @@ import { Store } from 'src/store/entities/store.entity';
   collection: 'users',
   toJSON: {
     virtuals: true,
-    transform: (_, ret) => {
-      ret.id = ret._id.toString();
-      delete ret._id;
-      delete ret.__v;
-      delete ret.password; // Optionnel : pour ne jamais exposer le mot de passe en JSON
-      return ret;
-    },
+  transform: (_, ret: any) => {
+    ret.id = ret._id.toString();
+    delete ret._id;
+    delete ret.__v;
+    delete ret.password; // plus d'erreur ici
+    return ret;
+  },
   },
 })
 export class User extends Document {

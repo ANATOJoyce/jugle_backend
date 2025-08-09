@@ -8,7 +8,6 @@ import { CreateCurrencyDto } from './dto/create-currency.dto';
 import { UpdateCurrencyDto } from './dto/update-currency.dto';
 import { User } from 'src/user/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
 import { CreateStoreWithUserDto } from './dto/create-store-with-user.dto';
 import { Role } from 'src/auth/role.enum';
 import { UserService } from 'src/user/user.service';

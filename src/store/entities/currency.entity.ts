@@ -5,12 +5,12 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
   timestamps: true,
   toJSON: {
     virtuals: true,
-    transform: (_, ret) => {
-      ret.id = ret._id;
-      delete ret._id;
-      delete ret.__v;
-      return ret;
-    },
+      transform: (_, ret: { _id: any; __v?: number; [key: string]: any }) => {
+        ret.id = ret._id.toString();
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      }
   },
   collection: 'store_currencies',
 })

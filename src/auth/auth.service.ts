@@ -21,6 +21,7 @@ import { RequestCodeDto } from './dto/request-code.dto';
 import { TokensDto } from './dto/tokens.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from './roles.guards';
+import { MongoServerError } from 'mongodb';
 
 
 @Injectable()
@@ -46,69 +47,72 @@ export class AuthService {
   // auth.service.ts
   private readonly refreshTokens: Map<string, string> = new Map();
 
+async register(registerDto: RegisterDto): Promise<{ access_token: string; refresh_token: string }> {
+  const { phone, email, password, first_name, last_name } = registerDto;
 
-  async register(registerDto: RegisterDto): Promise<{ access_token: string; refresh_token: string }> {
-    const { phone, email, password, first_name, last_name } = registerDto;
-
-    const existingUserByPhone = await this.userService.findByPhone(phone);
-    if (existingUserByPhone) {
-      throw new BadRequestException('Un utilisateur avec ce téléphone existe déjà.');
-    }
-
-    if (email) {
-      // Vérifie aussi dans "users"
-      const existingUserByEmail = await this.userService.findByEmail(email);
-      if (existingUserByEmail) {
-        throw new BadRequestException('Un utilisateur avec cet email existe déjà.');
-      }
-
-      const existingAuthIdentityByEmail = await this.authIdentityModel.findOne({ email });
-      if (existingAuthIdentityByEmail) {
-        throw new BadRequestException('Un utilisateur avec cet email existe déjà.');
-      }
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = await this.userService.createUser({
-      phone,
-      first_name,
-      last_name,
-      email,
-      password: hashedPassword,
-      role: Role.VENDOR,
-    });
-
-    // Génère un username unique : joyce.anato, joyce.anato1, etc.
-    let baseUsername = `${first_name}.${last_name}`.toLowerCase().replace(/\s+/g, '');
-    let username = baseUsername;
-    let counter = 1;
-    while (await this.authIdentityModel.findOne({ username })) {
-      username = `${baseUsername}${counter}`;
-      counter++;
-    }
-
-    const authIdentity = new this.authIdentityModel({
-      username,
-      email,
-      password: hashedPassword,
-      phone,
-      user: newUser._id,
-    });
-
-    try {
-      await authIdentity.save();
-    } catch (error) {
-      if (error.code === 11000 && error.keyPattern?.username) {
-        throw new BadRequestException(
-          "Un utilisateur avec ce nom et prénom existe déjà. Veuillez en choisir d'autres."
-        );
-      }
-      throw error;
-    }
-
-    return this.generateTokens(newUser, authIdentity);
+  const existingUserByPhone = await this.userService.findByPhone(phone);
+  if (existingUserByPhone) {
+    throw new BadRequestException('Un utilisateur avec ce téléphone existe déjà.');
   }
+
+  if (email) {
+    // Vérifie aussi dans "users"
+    const existingUserByEmail = await this.userService.findByEmail(email);
+    if (existingUserByEmail) {
+      throw new BadRequestException('Un utilisateur avec cet email existe déjà.');
+    }
+
+    const existingAuthIdentityByEmail = await this.authIdentityModel.findOne({ email });
+    if (existingAuthIdentityByEmail) {
+      throw new BadRequestException('Un utilisateur avec cet email existe déjà.');
+    }
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const newUser = await this.userService.createUser({
+    phone,
+    first_name,
+    last_name,
+    email,
+    password: hashedPassword,
+    role: Role.VENDOR,
+  });
+
+  // Génère un username unique : joyce.anato, joyce.anato1, etc.
+  let baseUsername = `${first_name}.${last_name}`.toLowerCase().replace(/\s+/g, '');
+  let username = baseUsername;
+  let counter = 1;
+  while (await this.authIdentityModel.findOne({ username })) {
+    username = `${baseUsername}${counter}`;
+    counter++;
+  }
+
+  const authIdentity = new this.authIdentityModel({
+    username,
+    email,
+    password: hashedPassword,
+    phone,
+    user: newUser._id,
+  });
+
+  try {
+  await authIdentity.save();
+} catch (error: unknown) {
+  if (
+    error instanceof MongoServerError &&
+    error.code === 11000 &&
+    error.keyPattern?.username
+  ) {
+    throw new BadRequestException(
+      "Un utilisateur avec ce nom et prénom existe déjà. Veuillez en choisir d'autres."
+    );
+  }
+  throw error;
+}
+
+  return this.generateTokens(newUser, authIdentity);
+}
 
       
 

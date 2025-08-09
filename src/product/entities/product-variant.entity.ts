@@ -22,7 +22,7 @@ export class ProductVariant extends Document {
   upc?: string;
 
   @Prop({ default: false })
-  allow_backorder: boolean;
+  allow_backorder!: boolean;
 
   @Prop({ default: true })
   manage_inventory: boolean;
@@ -35,18 +35,6 @@ export class ProductVariant extends Document {
 
   @Prop()
   mid_code?: string;
-
-  @Prop()
-  material?: string;
-
-  @Prop()
-  weight?: number;
-
-  @Prop()
-  length?: number;
-
-  @Prop()
-  height?: number;
 
   @Prop()
   width?: number;

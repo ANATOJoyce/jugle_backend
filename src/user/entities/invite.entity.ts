@@ -6,12 +6,12 @@ import { Document } from 'mongoose';
   collection: 'invites',
   toJSON: {
     virtuals: true,
-    transform: (_, ret) => {
+    transform: (_, ret: { _id: any; __v?: number; [key: string]: any }) => {
       ret.id = ret._id.toString();
       delete ret._id;
       delete ret.__v;
       return ret;
-    },
+    }
   },
 })
 export class Invite extends Document {
